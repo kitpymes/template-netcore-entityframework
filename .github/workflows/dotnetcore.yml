@@ -1,0 +1,27 @@
+name: Kitpymes.Core.EntityFramework
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        dotnet: [ '3.0.100', '3.1.100', '3.1.302' ]
+
+    name: Build for .NET Core ${{ matrix.dotnet }}
+
+    steps:  
+    - uses: actions/checkout@v1
+     
+    - name: Setup
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ matrix.dotnet }}
+       
+    - name: Build 
+      run: dotnet build Solution.sln --configuration Release
+     
+    - name: Tests
+      run: dotnet test --configuration Release --no-build

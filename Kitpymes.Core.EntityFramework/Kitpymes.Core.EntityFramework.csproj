@@ -1,0 +1,18 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <Import Project="$(SolutionDir)docs/props/Common.Build.props" Condition="Exists('$(SolutionDir)docs/props/Common.Build.props')" />
+  <Import Project="$(SolutionDir)docs/props/Pack.Build.props" Condition="Exists('$(SolutionDir)docs/props/Pack.Build.props')" />
+
+  <ItemGroup>
+    <PackageReference Include="Kitpymes.Core.Repositories" Version="1.0.1" />
+    <PackageReference Include="Kitpymes.Core.Shared" Version="1.0.7" />
+    <PackageReference Include="Kitpymes.Core.Entities" Version="1.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="3.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.InMemory" Version="3.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="3.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="3.0.0" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Console" Version="3.0.0" />
+    <PackageReference Include="Remotion.Linq" Version="2.2.0" />
+  </ItemGroup>
+
+</Project>
