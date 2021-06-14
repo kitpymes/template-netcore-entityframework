@@ -41,7 +41,7 @@ namespace Kitpymes.Core.EntityFramework
         {
             var settings = sqlServerOptions.ToConfigureOrDefault().SqlServerSettings;
 
-            return services.LoadContext<TDbContext>(settings);
+            return services.LoadSqlServer<TDbContext>(settings);
         }
 
         /// <summary>
@@ -63,7 +63,7 @@ namespace Kitpymes.Core.EntityFramework
 
             settings.DbContextOptionsBuilder = dbContextOptions => dbContextOptions
                      .UseSqlServer(connectionString, settings.SqlServerDbContextOptions)
-                     .WithLogger(services, settings.IsLogErrorsEnabled.HasValue && settings.IsLogErrorsEnabled.Value);
+                     .WithLogger(services, settings.IsLogErrorsEnabled == true);
 
             return services.LoadContext<TDbContext>(settings);
         }
@@ -128,16 +128,16 @@ namespace Kitpymes.Core.EntityFramework
                 .AddDbContextPool<TDbContext>(settings.DbContextOptionsBuilder)
                 .ToService<TDbContext>();
 
-            if (settings.IsEnsuredDeletedEnabled.HasValue && settings.IsEnsuredDeletedEnabled.Value)
+            if (settings.IsEnsuredDeletedEnabled == true)
             {
                 context.Database.EnsureDeleted();
             }
 
-            if (settings.IsEnsuredCreatedEnabled.HasValue && settings.IsEnsuredCreatedEnabled.Value)
+            if (settings.IsEnsuredCreatedEnabled == true)
             {
                 context.Database.EnsureCreated();
             }
-            else if (settings.IsMigrateEnabled.HasValue && settings.IsMigrateEnabled.Value)
+            else if (settings.IsMigrateEnabled == true)
             {
                 context.Database.Migrate();
             }
