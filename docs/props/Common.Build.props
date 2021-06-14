@@ -53,11 +53,9 @@
       #if NETFRAMEWORK
           FrameworkSpecific();
       #endif
-
       #if NETSTANDARD
           StandardSpecific();
       #endif
-
       #if NETCORE
           CoreSpecific();
       #endif
@@ -97,12 +95,10 @@
       </PropertyGroup>
 
       <ItemGroup>
-        <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="16.5.132" PrivateAssets="All" />
-        <PackageReference Include="Microsoft.CodeAnalysis.FxCopAnalyzers" Version="2.9.8" IncludeAssets="Analyzers;Build" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.VisualStudio.Threading.Analyzers" Version="16.10.56" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.CodeAnalysis.NetAnalyzers " Version="5.0.3" IncludeAssets="Analyzers;Build" PrivateAssets="All" />
         <PackageReference Include="StyleCop.Analyzers" Version="1.1.118" IncludeAssets="Analyzers;Build" PrivateAssets="All" />
-        <AdditionalFiles Include="$(SolutionDir)docs\analyzers\stylecop.json">
-          <Visible>false</Visible>
-        </AdditionalFiles>
+        <AdditionalFiles Include="$(SolutionDir)docs\analyzers\stylecop.json" Visible="false" />
       </ItemGroup>
     </When>
     <!--

@@ -1,2 +1,5 @@
+# v.1.0.1
+- Se actualiza la extensión de carga del contexto de sqlserver.
+
 # v.1.0.0
 - Se genera la primera versión del paquete del proyecto.

@@ -39,7 +39,7 @@ namespace Kitpymes.Core.EntityFramework
             Action<SqlServerOptions> sqlServerOptions)
                 where TDbContext : EntityFrameworkContext
         {
-            var settings = sqlServerOptions.ToConfigureOrDefault().EntityFrameworkSettings;
+            var settings = sqlServerOptions.ToConfigureOrDefault().SqlServerSettings;
 
             return services.LoadContext<TDbContext>(settings);
         }
