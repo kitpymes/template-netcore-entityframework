@@ -35,7 +35,7 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="enabled">Si se habilita o no.</param>
         /// <returns>SqlServerOptions.</returns>
-        public virtual SqlServerOptions WithLogErrors(bool enabled = SqlServerSettings.DefaultIsLogErrorsEnabled)
+        public SqlServerOptions WithLogErrors(bool enabled = SqlServerSettings.DefaultIsLogErrorsEnabled)
         {
             SqlServerSettings.IsLogErrorsEnabled = enabled;
 
@@ -47,7 +47,7 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="connectionString">String de conexión.</param>
         /// <returns>SqlServerOptions.</returns>
-        public virtual SqlServerOptions WithConnectionString(string connectionString)
+        public SqlServerOptions WithConnectionString(string connectionString)
         {
             SqlServerSettings.ConnectionString = connectionString;
 
@@ -62,18 +62,6 @@ namespace Kitpymes.Core.EntityFramework
         public SqlServerOptions WithSqlServerDbContextOptions(Action<SqlServerDbContextOptionsBuilder> sqlServerDbContextOptions)
         {
             SqlServerSettings.SqlServerDbContextOptions = sqlServerDbContextOptions;
-
-            return this;
-        }
-
-        /// <summary>
-        /// Configuración del contexto.
-        /// </summary>
-        /// <param name="dbContextOptionsBuilder">Opciones del contexto.</param>
-        /// <returns>SqlServerOptions.</returns>
-        public new SqlServerOptions WithDbContextOptions(Action<DbContextOptionsBuilder> dbContextOptionsBuilder)
-        {
-            SqlServerSettings.DbContextOptionsBuilder = dbContextOptionsBuilder;
 
             return this;
         }
