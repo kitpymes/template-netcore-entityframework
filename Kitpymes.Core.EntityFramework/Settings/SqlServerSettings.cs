@@ -25,8 +25,35 @@ namespace Kitpymes.Core.EntityFramework
     public class SqlServerSettings : EntityFrameworkSettings
     {
         /// <summary>
+        /// Si se habilita el log de errores.
+        /// </summary>
+        public const bool DefaultIsLogErrorsEnabled = false;
+
+        private bool isLogErrorsEnabled = DefaultIsLogErrorsEnabled;
+
+        /// <summary>
         /// Obtiene o establece un valor de la configuración del contexto.
         /// </summary>
         public Action<SqlServerDbContextOptionsBuilder>? SqlServerDbContextOptions { get; set; }
+
+        /// <summary>
+        /// Obtiene o establece la conexión de la base de datos.
+        /// </summary>
+        public string? ConnectionString { get; set; }
+
+        /// <summary>
+        /// Obtiene o establece un valor que indica si se habilita el log de errores.
+        /// </summary>
+        public bool? IsLogErrorsEnabled
+        {
+            get => isLogErrorsEnabled;
+            set
+            {
+                if (value.HasValue)
+                {
+                    isLogErrorsEnabled = value.Value;
+                }
+            }
+        }
     }
 }

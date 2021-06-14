@@ -18,7 +18,7 @@ namespace Kitpymes.Core.EntityFramework.Tests
             var services = new ServiceCollection();
 
             context = services.LoadInMemoryDatabase<FakeContext>();
-                        
+
             repository = new FakeRepository(context);
 
             SeedDatabase();

@@ -31,23 +31,11 @@ namespace Kitpymes.Core.EntityFramework
         public SqlServerSettings SqlServerSettings { get; private set; } = new SqlServerSettings();
 
         /// <summary>
-        /// Configuración del contexto de sql server.
-        /// </summary>
-        /// <param name="sqlServerDbContextOptions">Opciones de sql server.</param>
-        /// <returns>SqlServerOptions.</returns>
-        public SqlServerOptions WithSqlServerDbContextOptions(Action<SqlServerDbContextOptionsBuilder> sqlServerDbContextOptions)
-        {
-            SqlServerSettings.SqlServerDbContextOptions = sqlServerDbContextOptions;
-
-            return this;
-        }
-
-        /// <summary>
         /// Indica si se habilita el log de errores.
         /// </summary>
         /// <param name="enabled">Si se habilita o no.</param>
         /// <returns>SqlServerOptions.</returns>
-        public new SqlServerOptions WithLogErrors(bool enabled = EntityFrameworkSettings.DefaultIsLogErrorsEnabled)
+        public virtual SqlServerOptions WithLogErrors(bool enabled = SqlServerSettings.DefaultIsLogErrorsEnabled)
         {
             SqlServerSettings.IsLogErrorsEnabled = enabled;
 
@@ -59,9 +47,21 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="connectionString">String de conexión.</param>
         /// <returns>SqlServerOptions.</returns>
-        public new SqlServerOptions WithConnectionString(string connectionString)
+        public virtual SqlServerOptions WithConnectionString(string connectionString)
         {
             SqlServerSettings.ConnectionString = connectionString;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Configuración del contexto de sql server.
+        /// </summary>
+        /// <param name="sqlServerDbContextOptions">Opciones de sql server.</param>
+        /// <returns>SqlServerOptions.</returns>
+        public SqlServerOptions WithSqlServerDbContextOptions(Action<SqlServerDbContextOptionsBuilder> sqlServerDbContextOptions)
+        {
+            SqlServerSettings.SqlServerDbContextOptions = sqlServerDbContextOptions;
 
             return this;
         }

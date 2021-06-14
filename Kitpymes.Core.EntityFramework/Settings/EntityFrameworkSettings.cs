@@ -44,12 +44,6 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         public const bool DefaultIsMigrateEnabled = false;
 
-        /// <summary>
-        /// Si se habilita el log de errores.
-        /// </summary>
-        public const bool DefaultIsLogErrorsEnabled = false;
-
-        private bool isLogErrorsEnabled = DefaultIsLogErrorsEnabled;
         private bool isTransactionEnabled = DefaultIsTransactionEnabled;
         private bool isEnsuredCreatedEnabled = DefaultIsEnsuredCreatedEnabled;
         private bool isEnsuredDeletedEnabled = DefaultIsEnsuredDeletedEnabled;
@@ -59,26 +53,6 @@ namespace Kitpymes.Core.EntityFramework
         /// Obtiene o establece un valor de la configuración del contexto.
         /// </summary>
         public Action<DbContextOptionsBuilder>? DbContextOptionsBuilder { get; set; }
-
-        /// <summary>
-        /// Obtiene o establece la conexión de la base de datos.
-        /// </summary>
-        public string? ConnectionString { get; set; }
-
-        /// <summary>
-        /// Obtiene o establece un valor que indica si se habilita el log de errores.
-        /// </summary>
-        public bool? IsLogErrorsEnabled
-        {
-            get => isLogErrorsEnabled;
-            set
-            {
-                if (value.HasValue)
-                {
-                    isLogErrorsEnabled = value.Value;
-                }
-            }
-        }
 
         /// <summary>
         /// Obtiene o establece un valor que indica si se habilitan las transacciones.
