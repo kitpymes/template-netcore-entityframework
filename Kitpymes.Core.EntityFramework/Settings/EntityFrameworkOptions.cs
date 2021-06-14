@@ -30,11 +30,35 @@ namespace Kitpymes.Core.EntityFramework
         public EntityFrameworkSettings EntityFrameworkSettings { get; private set; } = new EntityFrameworkSettings();
 
         /// <summary>
+        /// Indica si se habilita el log de errores.
+        /// </summary>
+        /// <param name="enabled">Si se habilita o no.</param>
+        /// <returns>EntityFrameworkOptions.</returns>
+        public virtual EntityFrameworkOptions WithLogErrors(bool enabled = EntityFrameworkSettings.DefaultIsLogErrorsEnabled)
+        {
+            EntityFrameworkSettings.IsLogErrorsEnabled = enabled;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Conexión de la base de datos.
+        /// </summary>
+        /// <param name="connectionString">String de conexión.</param>
+        /// <returns>EntityFrameworkOptions.</returns>
+        public virtual EntityFrameworkOptions WithConnectionString(string connectionString)
+        {
+            EntityFrameworkSettings.ConnectionString = connectionString;
+
+            return this;
+        }
+
+        /// <summary>
         /// Configuración del contexto.
         /// </summary>
         /// <param name="dbContextOptionsBuilder">Opciones del contexto.</param>
         /// <returns>EntityFrameworkOptions.</returns>
-        public EntityFrameworkOptions WithDbContextOptions(Action<DbContextOptionsBuilder> dbContextOptionsBuilder)
+        public virtual EntityFrameworkOptions WithDbContextOptions(Action<DbContextOptionsBuilder> dbContextOptionsBuilder)
         {
             EntityFrameworkSettings.DbContextOptionsBuilder = dbContextOptionsBuilder;
 
@@ -46,7 +70,7 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="enabled">Si se habilita o no.</param>
         /// <returns>EntityFrameworkOptions.</returns>
-        public EntityFrameworkOptions WithTransaction(bool enabled = true)
+        public virtual EntityFrameworkOptions WithTransaction(bool enabled = true)
         {
             EntityFrameworkSettings.IsTransactionEnabled = enabled;
 
@@ -59,7 +83,7 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="enabled">Si se habilita o no.</param>
         /// <returns>EntityFrameworkOptions.</returns>
-        public EntityFrameworkOptions WithEnsuredCreated(bool enabled = true)
+        public virtual EntityFrameworkOptions WithEnsuredCreated(bool enabled = true)
         {
             EntityFrameworkSettings.IsEnsuredCreatedEnabled = enabled;
             EntityFrameworkSettings.IsMigrateEnabled = !enabled;
@@ -74,7 +98,7 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="enabled">Si se habilita o no.</param>
         /// <returns>EntityFrameworkOptions.</returns>
-        public EntityFrameworkOptions WithMigrateEnabled(bool enabled = true)
+        public virtual EntityFrameworkOptions WithMigrateEnabled(bool enabled = true)
         {
             EntityFrameworkSettings.IsMigrateEnabled = enabled;
             EntityFrameworkSettings.IsEnsuredCreatedEnabled = !enabled;
@@ -87,7 +111,7 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="enabled">Si se habilita o no.</param>
         /// <returns>EntityFrameworkOptions.</returns>
-        public EntityFrameworkOptions WithEnsuredDeleted(bool enabled = true)
+        public virtual EntityFrameworkOptions WithEnsuredDeleted(bool enabled = true)
         {
             EntityFrameworkSettings.IsEnsuredDeletedEnabled = enabled;
 

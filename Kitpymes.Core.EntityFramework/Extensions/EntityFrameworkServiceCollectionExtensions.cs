@@ -60,18 +60,11 @@ namespace Kitpymes.Core.EntityFramework
 
             var connectionString = settings.ConnectionString.ToIsNullOrEmptyThrow(nameof(settings.ConnectionString));
 
-            var entityFrameworkSettings = new EntityFrameworkSettings
-            {
-                DbContextOptionsBuilder = dbContextOptions => dbContextOptions
+            settings.DbContextOptionsBuilder = dbContextOptions => dbContextOptions
                     .UseSqlServer(connectionString, settings.SqlServerDbContextOptions)
-                    .WithLogger(services, settings.IsLogErrorsEnabled == true),
-                IsEnsuredCreatedEnabled = settings.IsEnsuredCreatedEnabled,
-                IsEnsuredDeletedEnabled = settings.IsEnsuredDeletedEnabled,
-                IsMigrateEnabled = settings.IsMigrateEnabled,
-                IsTransactionEnabled = settings.IsTransactionEnabled,
-            };
+                    .WithLogger(services, settings.IsLogErrorsEnabled == true);
 
-            return services.LoadContext<TDbContext>(entityFrameworkSettings);
+            return services.LoadContext<TDbContext>(settings);
         }
 
         /// <summary>

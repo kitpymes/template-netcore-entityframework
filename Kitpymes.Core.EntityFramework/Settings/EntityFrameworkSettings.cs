@@ -24,10 +24,36 @@ namespace Kitpymes.Core.EntityFramework
     /// </remarks>
     public class EntityFrameworkSettings
     {
-        private bool _isTransactionEnabled = false;
-        private bool _isEnsuredCreatedEnabled = false;
-        private bool _isEnsuredDeletedEnabled = false;
-        private bool _isMigrateEnabled = false;
+        /// <summary>
+        /// Si se habilitan las transacciones.
+        /// </summary>
+        public const bool DefaultIsTransactionEnabled = false;
+
+        /// <summary>
+        /// Si se habilita la eliminación de la base de datos si esta existe.
+        /// </summary>
+        public const bool DefaultIsEnsuredCreatedEnabled = false;
+
+        /// <summary>
+        /// Si se habilitan las migraciones.
+        /// </summary>
+        public const bool DefaultIsEnsuredDeletedEnabled = false;
+
+        /// <summary>
+        /// Si se habilita el log de errores.
+        /// </summary>
+        public const bool DefaultIsMigrateEnabled = false;
+
+        /// <summary>
+        /// Si se habilita el log de errores.
+        /// </summary>
+        public const bool DefaultIsLogErrorsEnabled = false;
+
+        private bool isLogErrorsEnabled = DefaultIsLogErrorsEnabled;
+        private bool isTransactionEnabled = DefaultIsTransactionEnabled;
+        private bool isEnsuredCreatedEnabled = DefaultIsEnsuredCreatedEnabled;
+        private bool isEnsuredDeletedEnabled = DefaultIsEnsuredDeletedEnabled;
+        private bool isMigrateEnabled = DefaultIsMigrateEnabled;
 
         /// <summary>
         /// Obtiene o establece un valor de la configuración del contexto.
@@ -35,16 +61,36 @@ namespace Kitpymes.Core.EntityFramework
         public Action<DbContextOptionsBuilder>? DbContextOptionsBuilder { get; set; }
 
         /// <summary>
-        /// Obtiene o establece un valor que indica si se habilita las transacciones.
+        /// Obtiene o establece la conexión de la base de datos.
         /// </summary>
-        public bool? IsTransactionEnabled
+        public string? ConnectionString { get; set; }
+
+        /// <summary>
+        /// Obtiene o establece un valor que indica si se habilita el log de errores.
+        /// </summary>
+        public bool? IsLogErrorsEnabled
         {
-            get => _isTransactionEnabled;
+            get => isLogErrorsEnabled;
             set
             {
                 if (value.HasValue)
                 {
-                    _isTransactionEnabled = value.Value;
+                    isLogErrorsEnabled = value.Value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Obtiene o establece un valor que indica si se habilitan las transacciones.
+        /// </summary>
+        public bool? IsTransactionEnabled
+        {
+            get => isTransactionEnabled;
+            set
+            {
+                if (value.HasValue)
+                {
+                    isTransactionEnabled = value.Value;
                 }
             }
         }
@@ -55,12 +101,12 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         public bool? IsEnsuredCreatedEnabled
         {
-            get => _isEnsuredCreatedEnabled;
+            get => isEnsuredCreatedEnabled;
             set
             {
                 if (value.HasValue)
                 {
-                    _isEnsuredCreatedEnabled = value.Value;
+                    isEnsuredCreatedEnabled = value.Value;
                 }
             }
         }
@@ -70,12 +116,12 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         public bool? IsEnsuredDeletedEnabled
         {
-            get => _isEnsuredDeletedEnabled;
+            get => isEnsuredDeletedEnabled;
             set
             {
                 if (value.HasValue)
                 {
-                    _isEnsuredDeletedEnabled = value.Value;
+                    isEnsuredDeletedEnabled = value.Value;
                 }
             }
         }
@@ -87,12 +133,12 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         public bool? IsMigrateEnabled
         {
-            get => _isMigrateEnabled;
+            get => isMigrateEnabled;
             set
             {
                 if (value.HasValue)
                 {
-                    _isMigrateEnabled = value.Value;
+                    isMigrateEnabled = value.Value;
                 }
             }
         }

@@ -8,7 +8,7 @@
 namespace Kitpymes.Core.EntityFramework
 {
     using System;
-    using Kitpymes.Core.Shared;
+    using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Infrastructure;
 
     /*
@@ -35,7 +35,7 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="sqlServerDbContextOptions">Opciones de sql server.</param>
         /// <returns>SqlServerOptions.</returns>
-        public SqlServerOptions WithDbContextOptions(Action<SqlServerDbContextOptionsBuilder> sqlServerDbContextOptions)
+        public SqlServerOptions WithSqlServerDbContextOptions(Action<SqlServerDbContextOptionsBuilder> sqlServerDbContextOptions)
         {
             SqlServerSettings.SqlServerDbContextOptions = sqlServerDbContextOptions;
 
@@ -47,7 +47,7 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="enabled">Si se habilita o no.</param>
         /// <returns>SqlServerOptions.</returns>
-        public SqlServerOptions WithLogErrors(bool enabled = true)
+        public new SqlServerOptions WithLogErrors(bool enabled = EntityFrameworkSettings.DefaultIsLogErrorsEnabled)
         {
             SqlServerSettings.IsLogErrorsEnabled = enabled;
 
@@ -58,10 +58,75 @@ namespace Kitpymes.Core.EntityFramework
         /// Conexión de la base de datos.
         /// </summary>
         /// <param name="connectionString">String de conexión.</param>
-        /// <returns>SqlServerOptions | ApplicationException: si connectionString es nulo o vacio.</returns>
-        public SqlServerOptions WithConnectionString(string connectionString)
+        /// <returns>SqlServerOptions.</returns>
+        public new SqlServerOptions WithConnectionString(string connectionString)
         {
-            SqlServerSettings.ConnectionString = connectionString.ToIsNullOrEmptyThrow(nameof(connectionString));
+            SqlServerSettings.ConnectionString = connectionString;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Configuración del contexto.
+        /// </summary>
+        /// <param name="dbContextOptionsBuilder">Opciones del contexto.</param>
+        /// <returns>SqlServerOptions.</returns>
+        public new SqlServerOptions WithDbContextOptions(Action<DbContextOptionsBuilder> dbContextOptionsBuilder)
+        {
+            SqlServerSettings.DbContextOptionsBuilder = dbContextOptionsBuilder;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Indica si se habilita las transacciones.
+        /// </summary>
+        /// <param name="enabled">Si se habilita o no.</param>
+        /// <returns>SqlServerOptions.</returns>
+        public new SqlServerOptions WithTransaction(bool enabled = true)
+        {
+            SqlServerSettings.IsTransactionEnabled = enabled;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Indica si se habilita la creación de la base de datos si no existe.
+        /// No utiliza migraciones para crear la base de datos y, por lo tanto, no se puede actualizar posteriormente mediante migraciones.
+        /// </summary>
+        /// <param name="enabled">Si se habilita o no.</param>
+        /// <returns>SqlServerOptions.</returns>
+        public new SqlServerOptions WithEnsuredCreated(bool enabled = true)
+        {
+            SqlServerSettings.IsEnsuredCreatedEnabled = enabled;
+            SqlServerSettings.IsMigrateEnabled = !enabled;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Indica si se habilitan las migraciones.
+        /// Creará la base de datos si aún no existe.
+        /// Es mutuamente excluyente con IsEnsuredDeletedEnabled./// Indica si se habilita las transacciones.
+        /// </summary>
+        /// <param name="enabled">Si se habilita o no.</param>
+        /// <returns>SqlServerOptions.</returns>
+        public new SqlServerOptions WithMigrateEnabled(bool enabled = true)
+        {
+            SqlServerSettings.IsMigrateEnabled = enabled;
+            SqlServerSettings.IsEnsuredCreatedEnabled = !enabled;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Indica si se habilita la eliminación de la base de datos si esta existe.
+        /// </summary>
+        /// <param name="enabled">Si se habilita o no.</param>
+        /// <returns>SqlServerOptions.</returns>
+        public new SqlServerOptions WithEnsuredDeleted(bool enabled = true)
+        {
+            SqlServerSettings.IsEnsuredDeletedEnabled = enabled;
 
             return this;
         }
