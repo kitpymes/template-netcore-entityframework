@@ -34,9 +34,7 @@ namespace Kitpymes.Core.EntityFramework
         public static ValueConverter<TEnum, string> ToEnumName<TEnum, TValue>()
             where TEnum : EnumerationBase<TEnum, TValue>
             where TValue : IEquatable<TValue>, IComparable<TValue>
-        => new ValueConverter<TEnum, string>(
-            v => v.Name,
-            v => EnumerationBase<TEnum, TValue>.ToEnum(v));
+        => new (v => v.Name, v => EnumerationBase<TEnum, TValue>.ToEnum(v) !);
 
         /// <summary>
         /// Convierte una enumeración.
@@ -47,44 +45,34 @@ namespace Kitpymes.Core.EntityFramework
         public static ValueConverter<TEnum, TValue> ToEnumValue<TEnum, TValue>()
             where TEnum : EnumerationBase<TEnum, TValue>
             where TValue : IEquatable<TValue>, IComparable<TValue>
-        => new ValueConverter<TEnum, TValue>(
-            v => v.Value,
-            v => EnumerationBase<TEnum, TValue>.ToEnum(v));
+        => new (v => v.Value, v => EnumerationBase<TEnum, TValue>.ToEnum(v) !);
 
         /// <summary>
         /// Convierte una enumeración.
         /// </summary>
         /// <returns>ValueConverter{StatusEnum, string}.</returns>
         public static ValueConverter<StatusEnum, string> ToStatus()
-        => new ValueConverter<StatusEnum, string>(
-            v => v.Name,
-            v => StatusEnum.ToEnum(v));
+        => new (v => v.Name, v => StatusEnum.ToEnum(v) !);
 
         /// <summary>
         /// Convierte un value object.
         /// </summary>
         /// <returns>ValueConverter{Email, string}.</returns>
         public static ValueConverter<Email, string> ToEmail<TEnum>()
-        => new ValueConverter<Email, string>(
-           v => v.Value ?? string.Empty,
-           v => Email.Create(v));
+        => new (v => v.Value ?? string.Empty, v => Email.Create(v));
 
         /// <summary>
         /// Convierte un value object.
         /// </summary>
         /// <returns>ValueConverter{Name, string}.</returns>
         public static ValueConverter<Name, string> ToName<TEnum>()
-        => new ValueConverter<Name, string>(
-           v => v.Value ?? string.Empty,
-           v => Name.Create(v));
+        => new (v => v.Value ?? string.Empty, v => Name.Create(v));
 
         /// <summary>
         /// Convierte un value object.
         /// </summary>
         /// <returns>ValueConverter{Subdomain, string}.</returns>
         public static ValueConverter<Subdomain, string> ToSubdomain<TEnum>()
-        => new ValueConverter<Subdomain, string>(
-            v => v.Value ?? string.Empty,
-            v => Subdomain.Create(v));
+        => new (v => v.Value ?? string.Empty, v => Subdomain.Create(v));
     }
 }

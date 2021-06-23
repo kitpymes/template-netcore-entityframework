@@ -1,3 +1,6 @@
+# v.1.0.7
+- Se migra de la versión netcoreapp3 a net5 y se actualizan librerías.
+
 # v.1.0.6
 - Se actualiza la extensión de carga del contexto de sqlserver.
 

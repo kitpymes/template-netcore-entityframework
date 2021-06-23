@@ -127,6 +127,11 @@ namespace Kitpymes.Core.EntityFramework
                 .AddDbContextPool<TDbContext>(settings.DbContextOptionsBuilder)
                 .ToService<TDbContext>();
 
+            if (context is null)
+            {
+                throw new ArgumentNullException(nameof(context));
+            }
+
             if (settings.IsEnsuredDeletedEnabled == true)
             {
                 context.Database.EnsureDeleted();

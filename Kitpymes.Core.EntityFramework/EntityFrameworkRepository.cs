@@ -36,7 +36,7 @@ namespace Kitpymes.Core.EntityFramework
 
         /// <inheritdoc/>
         public T GetOne(Expression<Func<T, bool>> where)
-        => Query.FirstOrDefault(where);
+        => Query.First(where);
 
         /// <inheritdoc/>
         public async Task<T> GetOneAsync(Expression<Func<T, bool>> where)
@@ -44,7 +44,7 @@ namespace Kitpymes.Core.EntityFramework
 
         /// <inheritdoc/>
         public T GetOne(Expression<Func<T, bool>> where, params Expression<Func<T, object>>[] includes)
-        => Query.ToInclude(includes).FirstOrDefault(where);
+        => Query.ToInclude(includes).First(where);
 
         /// <inheritdoc/>
         public async Task<T> GetOneAsync(Expression<Func<T, bool>> where, params Expression<Func<T, object>>[] includes)
@@ -55,7 +55,7 @@ namespace Kitpymes.Core.EntityFramework
             Expression<Func<T, TResult>> select,
             Expression<Func<T, bool>>? where = null,
             params Expression<Func<T, object>>[] includes)
-        => Query.ToInclude(includes).ToWhere(where).Select(select).FirstOrDefault();
+        => Query.ToInclude(includes).ToWhere(where).Select(select).First();
 
         /// <inheritdoc/>
         public async Task<TResult> GetOneAsync<TResult>(
