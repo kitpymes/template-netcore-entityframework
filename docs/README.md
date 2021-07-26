@@ -58,17 +58,18 @@ public static class DetectChangesLazyLoadingExtensions
 ```cs
 public static class EntityFrameworkServiceCollectionExtensions
 {
-    public static TDbContext LoadSqlServer<TDbContext>(
+   public static TDbContext LoadSqlServer<TDbContext, TUnitOfWork>(
         this IServiceCollection services,
         Action<SqlServerOptions> sqlServerOptions)
             where TDbContext : EntityFrameworkContext
+            where TUnitOfWork : EntityFrameworkUnitOfWork<TDbContext>
     {}
 
-
-    public static TDbContext LoadSqlServer<TDbContext>(
+    public static TDbContext LoadSqlServer<TDbContext, TUnitOfWork>(
         this IServiceCollection services,
         SqlServerSettings sqlServerSettings)
             where TDbContext : EntityFrameworkContext
+            where TUnitOfWork : EntityFrameworkUnitOfWork<TDbContext>
     {}
 
     public static TDbContext LoadInMemoryDatabase<TDbContext>(
@@ -84,10 +85,24 @@ public static class EntityFrameworkServiceCollectionExtensions
             where TDbContext : DbContext
     {}
 
+    public static TDbContext LoadContext<TDbContext, TUnitOfWork>(
+        this IServiceCollection services,
+        Action<EntityFrameworkOptions> entityFrameworkOptions)
+            where TDbContext : DbContext
+            where TUnitOfWork : EntityFrameworkUnitOfWork<TDbContext>
+    {}
+
     public static TDbContext LoadContext<TDbContext>(
         this IServiceCollection services,
         EntityFrameworkSettings entityFrameworkSettings)
             where TDbContext : DbContext
+    {}
+
+    public static TDbContext LoadContext<TDbContext, TUnitOfWork>(
+        this IServiceCollection services,
+        EntityFrameworkSettings entityFrameworkSettings)
+            where TDbContext : DbContext
+            where TUnitOfWork : EntityFrameworkUnitOfWork<TDbContext>
     {}
 }
 ```
@@ -204,28 +219,29 @@ public class SqlServerSettings : EntityFrameworkSettings
 ```cs
 public interface IEntityFrameworkUnitOfWork : IUnitOfWork
 {
-    Task OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
+    ValueTask OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
 
-    Task SaveAsync(bool useChangeTracker = false);
+    ValueTask SaveAsync(bool useChangeTracker = true);
 
-    void Save(bool useChangeTracker = false);
+    void Save(bool useChangeTracker = true);
 }
 ```
 
 ```cs
-public class EntityFrameworkUnitOfWork : IEntityFrameworkUnitOfWork
+public class EntityFrameworkUnitOfWork<TDbContext> : IEntityFrameworkUnitOfWork
+    where TDbContext : DbContext
 {
-    public EntityFrameworkUnitOfWork(DbContext context) {}
+    public EntityFrameworkUnitOfWork(TDbContext context) {}
 
-    public void OpenTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted) {}
+    public virtual void OpenTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted) {}
 
-    public async Task OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted) {}
+    public virtual async ValueTask OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted) {}
 
-    public void Save() {}
+    public virtual void Save() {}
 
-    public void Save(bool useChangeTracker = false) {}
+    public virtual void Save(bool useChangeTracker = true) {}
 
-    public async Task SaveAsync(bool useChangeTracker = false) {}
+    public virtual async ValueTask SaveAsync(bool useChangeTracker = true) {}
 }
 ```
 

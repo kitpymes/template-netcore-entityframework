@@ -19,19 +19,19 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="isolationLevel">Especifica el comportamiento de bloqueo de transacciones para la conexión.</param>
         /// <returns>Task.</returns>
-        Task OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
+        ValueTask OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
 
         /// <summary>
         /// Guarda una operación en la base de datos.
         /// </summary>
         /// <param name="useChangeTracker">Si utiliza el seguimiento de la operación.</param>
         /// <returns>Task.</returns>
-        Task SaveAsync(bool useChangeTracker = false);
+        ValueTask SaveAsync(bool useChangeTracker = true);
 
         /// <summary>
         /// Guarda una operación en la base de datos.
         /// </summary>
         /// <param name="useChangeTracker">Si utiliza el seguimiento de la operación.</param>
-        void Save(bool useChangeTracker = false);
+        void Save(bool useChangeTracker = true);
     }
 }

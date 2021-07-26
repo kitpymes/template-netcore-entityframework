@@ -31,30 +31,34 @@ namespace Kitpymes.Core.EntityFramework
         /// Carga un contexto de datos.
         /// </summary>
         /// <typeparam name="TDbContext">Tipo de contexto.</typeparam>
+        /// <typeparam name="TUnitOfWork">Tipo de unidad de trabajo.</typeparam>
         /// <param name="services">Collección de servicios.</param>
         /// <param name="sqlServerOptions">Configuración de sql server y entity framework.</param>
         /// <returns>TDbContext | ApplicationException.</returns>
-        public static TDbContext LoadSqlServer<TDbContext>(
+        public static TDbContext LoadSqlServer<TDbContext, TUnitOfWork>(
             this IServiceCollection services,
             Action<SqlServerOptions> sqlServerOptions)
                 where TDbContext : EntityFrameworkContext
+                where TUnitOfWork : EntityFrameworkUnitOfWork<TDbContext>
         {
             var settings = sqlServerOptions.ToConfigureOrDefault().SqlServerSettings;
 
-            return services.LoadSqlServer<TDbContext>(settings);
+            return services.LoadSqlServer<TDbContext, TUnitOfWork>(settings);
         }
 
         /// <summary>
         /// Carga un contexto de datos.
         /// </summary>
         /// <typeparam name="TDbContext">Tipo de contexto.</typeparam>
+        /// <typeparam name="TUnitOfWork">Tipo de unidad de trabajo.</typeparam>
         /// <param name="services">Collección de servicios.</param>
         /// <param name="sqlServerSettings">Configuración de sql server y entity framework.</param>
         /// <returns>TDbContext | ApplicationException.</returns>
-        public static TDbContext LoadSqlServer<TDbContext>(
+        public static TDbContext LoadSqlServer<TDbContext, TUnitOfWork>(
             this IServiceCollection services,
             SqlServerSettings sqlServerSettings)
                 where TDbContext : EntityFrameworkContext
+                where TUnitOfWork : EntityFrameworkUnitOfWork<TDbContext>
         {
             var settings = sqlServerSettings.ToIsNullOrEmptyThrow(nameof(sqlServerSettings));
 
@@ -64,7 +68,7 @@ namespace Kitpymes.Core.EntityFramework
                     .UseSqlServer(connectionString, settings.SqlServerDbContextOptions)
                     .WithLogger(services, settings.IsLogErrorsEnabled == true);
 
-            return services.LoadContext<TDbContext>(settings);
+            return services.LoadContext<TDbContext, TUnitOfWork>(settings);
         }
 
         /// <summary>
@@ -111,6 +115,25 @@ namespace Kitpymes.Core.EntityFramework
         /// Carga un contexto de datos.
         /// </summary>
         /// <typeparam name="TDbContext">Tipo de contexto.</typeparam>
+        /// <typeparam name="TUnitOfWork">Tipo de unidad de trabajo.</typeparam>
+        /// <param name="services">Collección de servicios.</param>
+        /// <param name="entityFrameworkOptions">Configuración de entity framework.</param>
+        /// <returns>TDbContext | ApplicationException.</returns>
+        public static TDbContext LoadContext<TDbContext, TUnitOfWork>(
+            this IServiceCollection services,
+            Action<EntityFrameworkOptions> entityFrameworkOptions)
+                where TDbContext : DbContext
+                where TUnitOfWork : EntityFrameworkUnitOfWork<TDbContext>
+        {
+            var settings = entityFrameworkOptions.ToConfigureOrDefault().EntityFrameworkSettings;
+
+            return services.LoadContext<TDbContext, TUnitOfWork>(settings);
+        }
+
+        /// <summary>
+        /// Carga un contexto de datos.
+        /// </summary>
+        /// <typeparam name="TDbContext">Tipo de contexto.</typeparam>
         /// <param name="services">Collección de servicios.</param>
         /// <param name="entityFrameworkSettings">Configuración de entity framework.</param>
         /// <returns>TDbContext | ApplicationException.</returns>
@@ -121,32 +144,71 @@ namespace Kitpymes.Core.EntityFramework
         {
             var settings = entityFrameworkSettings.ToIsNullOrEmptyThrow(nameof(entityFrameworkSettings));
 
-            services.ToServiceMatchingInterface(new[] { typeof(IEntityFrameworkUnitOfWork).Assembly });
+            services.AddScoped<DbContext, TDbContext>();
 
             var context = services
                 .AddDbContextPool<TDbContext>(settings.DbContextOptionsBuilder)
                 .ToService<TDbContext>();
 
-            if (context is null)
-            {
-                throw new ArgumentNullException(nameof(context));
-            }
+            var validContext = context.ToIsNullOrEmptyThrow(nameof(context));
 
             if (settings.IsEnsuredDeletedEnabled == true)
             {
-                context.Database.EnsureDeleted();
+                validContext.Database.EnsureDeleted();
             }
 
             if (settings.IsEnsuredCreatedEnabled == true)
             {
-                context.Database.EnsureCreated();
+                validContext.Database.EnsureCreated();
             }
             else if (settings.IsMigrateEnabled == true)
             {
-                context.Database.Migrate();
+                validContext.Database.Migrate();
             }
 
-            return context;
+            return validContext;
+        }
+
+        /// <summary>
+        /// Carga un contexto de datos.
+        /// </summary>
+        /// <typeparam name="TDbContext">Tipo de contexto.</typeparam>
+        /// <typeparam name="TUnitOfWork">Tipo de unidad de trabajo.</typeparam>
+        /// <param name="services">Collección de servicios.</param>
+        /// <param name="entityFrameworkSettings">Configuración de entity framework.</param>
+        /// <returns>TDbContext | ApplicationException.</returns>
+        public static TDbContext LoadContext<TDbContext, TUnitOfWork>(
+           this IServiceCollection services,
+           EntityFrameworkSettings entityFrameworkSettings)
+               where TDbContext : DbContext
+               where TUnitOfWork : EntityFrameworkUnitOfWork<TDbContext>
+        {
+            var settings = entityFrameworkSettings.ToIsNullOrEmptyThrow(nameof(entityFrameworkSettings));
+
+            services.AddScoped<DbContext, TDbContext>()
+                    .AddScoped<IEntityFrameworkUnitOfWork, TUnitOfWork>();
+
+            var context = services
+                .AddDbContextPool<TDbContext>(settings.DbContextOptionsBuilder)
+                .ToService<TDbContext>();
+
+            var validContext = context.ToIsNullOrEmptyThrow(nameof(context));
+
+            if (settings.IsEnsuredDeletedEnabled == true)
+            {
+                validContext.Database.EnsureDeleted();
+            }
+
+            if (settings.IsEnsuredCreatedEnabled == true)
+            {
+                validContext.Database.EnsureCreated();
+            }
+            else if (settings.IsMigrateEnabled == true)
+            {
+                validContext.Database.Migrate();
+            }
+
+            return validContext;
         }
     }
 }

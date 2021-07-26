@@ -16,34 +16,35 @@ namespace Kitpymes.Core.EntityFramework
     using Microsoft.EntityFrameworkCore.Storage;
 
     /// <inheritdoc/>
-    public class EntityFrameworkUnitOfWork : IEntityFrameworkUnitOfWork
+    public class EntityFrameworkUnitOfWork<TDbContext> : IEntityFrameworkUnitOfWork
+        where TDbContext : DbContext
     {
         /// <summary>
-        /// Inicializa una nueva instancia de la clase <see cref="EntityFrameworkUnitOfWork"/>.
+        /// Inicializa una nueva instancia de la clase <see cref="EntityFrameworkUnitOfWork{TDbContext}"/>.
         /// </summary>
         /// <param name="context">Contexto de datos.</param>
-        public EntityFrameworkUnitOfWork(DbContext context)
+        public EntityFrameworkUnitOfWork(TDbContext context)
         => Context = context.ToIsNullOrEmptyThrow(nameof(context));
 
         private IDbContextTransaction? Transaction { get; set; }
 
-        private DbContext Context { get; }
+        private TDbContext Context { get; }
 
         #region Transaction
 
         /// <inheritdoc/>
-        public void OpenTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
+        public virtual void OpenTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         => Task.FromResult(OpenTransactionAsync(isolationLevel));
 
         /// <inheritdoc/>
-        public async Task OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
+        public virtual async ValueTask OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
-            if (Transaction != null)
+            if (Transaction is not null)
             {
                 await Transaction.DisposeAsync();
             }
 
-            Transaction = await Context.Database.BeginTransactionAsync(isolationLevel).ConfigureAwait(false);
+            Transaction = await Context.Database.BeginTransactionAsync(isolationLevel);
         }
 
         #endregion Transaction
@@ -51,31 +52,28 @@ namespace Kitpymes.Core.EntityFramework
         #region Save
 
         /// <inheritdoc/>
-        public void Save() => Task.FromResult(SaveAsync());
+        public virtual void Save() => Task.FromResult(SaveAsync());
 
         /// <inheritdoc/>
-        public void Save(bool useChangeTracker = false) => Task.FromResult(SaveAsync(useChangeTracker));
+        public virtual void Save(bool useChangeTracker = true) => Task.FromResult(SaveAsync(useChangeTracker));
 
         /// <inheritdoc/>
-        public async Task SaveAsync(bool useChangeTracker = false)
+        public virtual async ValueTask SaveAsync(bool useChangeTracker = true)
         {
             try
             {
-                await Context
-                    .WithChangeTracker(useChangeTracker)
-                    .SaveChangesAsync()
-                    .ConfigureAwait(false);
+                await Context.WithChangeTracker(useChangeTracker).SaveChangesAsync();
 
-                if (Transaction != null)
+                if (Transaction is not null)
                 {
-                    await Transaction.CommitAsync().ConfigureAwait(false);
+                    await Transaction.CommitAsync();
                 }
             }
             catch (Exception exception)
             {
-                await CloseTransactionAsync().ConfigureAwait(false);
+                await CloseTransactionAsync();
 
-                ThrowSave(exception);
+                await ThrowSaveAsync(exception);
             }
         }
 
@@ -83,22 +81,22 @@ namespace Kitpymes.Core.EntityFramework
 
         #region Private
 
-        private async Task CloseTransactionAsync()
+        private async ValueTask CloseTransactionAsync()
         {
-            if (Transaction != null)
+            if (Transaction is not null)
             {
                 await Transaction.DisposeAsync();
             }
 
-            if (Context != null)
+            if (Context is not null)
             {
-                await Context.Database.CloseConnectionAsync().ConfigureAwait(false);
+                await Context.Database.CloseConnectionAsync();
 
                 await Context.DisposeAsync();
             }
         }
 
-        private void ThrowSave(Exception exception)
+        private async ValueTask ThrowSaveAsync(Exception exception)
         {
             var sb = new StringBuilder();
 
@@ -108,7 +106,7 @@ namespace Kitpymes.Core.EntityFramework
 
                     sb.AppendLine(dbUpdateConcurrencyException.ToFullMessage());
 
-                    if (dbUpdateConcurrencyException?.Entries != null)
+                    if (dbUpdateConcurrencyException.Entries is not null)
                     {
                         foreach (var eve in dbUpdateConcurrencyException.Entries)
                         {
@@ -126,7 +124,7 @@ namespace Kitpymes.Core.EntityFramework
 
                     sb.AppendLine(dbUpdateException.ToFullMessage());
 
-                    if (dbUpdateException?.Entries != null)
+                    if (dbUpdateException?.Entries is not null)
                     {
                         foreach (var eve in dbUpdateException.Entries)
                         {
@@ -144,7 +142,7 @@ namespace Kitpymes.Core.EntityFramework
 
                     sb.AppendLine(exception.ToFullMessage());
 
-                    if (exception?.Data != null)
+                    if (exception?.Data is not null)
                     {
                         foreach (var eve in exception.Data)
                         {
@@ -155,6 +153,10 @@ namespace Kitpymes.Core.EntityFramework
 
                     throw new Exception(sb.ToString());
             }
+
+#pragma warning disable CS0162 // Se detectó código inaccesible
+            await Task.CompletedTask;
+#pragma warning restore CS0162 // Se detectó código inaccesible
         }
 
         #endregion Private
