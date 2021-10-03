@@ -39,9 +39,14 @@ namespace Kitpymes.Core.EntityFramework
                         {
                             case EntityState.Added:
                                 {
-                                    if (entry.Entity is IStatus)
+                                    if (entry.Entity is IActive)
                                     {
-                                        entry.Property(IStatus.Status).CurrentValue = StatusEnum.Active;
+                                        entry.Property(IActive.IsActive).CurrentValue = true;
+                                    }
+
+                                    if (entry.Entity is IDelete)
+                                    {
+                                        entry.Property(IDelete.IsDelete).CurrentValue = false;
                                     }
 
                                     if (entry.Entity is ICreationAudited)
@@ -56,9 +61,14 @@ namespace Kitpymes.Core.EntityFramework
 
                             case EntityState.Deleted:
                                 {
-                                    if (entry.Entity is IStatus)
+                                    if (entry.Entity is IActive)
                                     {
-                                        entry.Property(IStatus.Status).CurrentValue = StatusEnum.Inactive;
+                                        entry.Property(IActive.IsActive).CurrentValue = false;
+                                    }
+
+                                    if (entry.Entity is IDelete)
+                                    {
+                                        entry.Property(IDelete.IsDelete).CurrentValue = true;
                                     }
 
                                     if (entry.Entity is IDeletionAudited)

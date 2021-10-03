@@ -7,10 +7,7 @@
 
 namespace Kitpymes.Core.EntityFramework
 {
-    using System;
-    using System.Linq;
     using System.Reflection;
-    using Kitpymes.Core.Shared;
     using Microsoft.EntityFrameworkCore;
 
     /*
@@ -31,31 +28,14 @@ namespace Kitpymes.Core.EntityFramework
         /// Aplica la configuración del modelo de entidades.
         /// </summary>
         /// <param name="modelBuilder">Modelo de entidades.</param>
+        /// <param name="assembly">Ensamblado donde se configuran las entidades.</param>
         /// <param name="enabled">Si se habilita la configuración.</param>
         /// <returns>ModelBuilder | ApplicationException: modelBuilder es nulo.</returns>
-        public static ModelBuilder WithEntitiesConfigurations(this ModelBuilder modelBuilder, bool enabled = true)
+        public static ModelBuilder WithEntitiesConfigurations(this ModelBuilder modelBuilder, Assembly assembly, bool enabled = true)
         {
             if (enabled)
             {
-                modelBuilder.ToIsNullOrEmptyThrow(nameof(modelBuilder));
-
-                static bool Expression(Type type)
-                    => type.IsGenericType && type.GetGenericTypeDefinition() == typeof(IEntityTypeConfiguration<>);
-
-                var types = Assembly.GetCallingAssembly().GetTypes()
-                    .Where(type => type.GetInterfaces()
-                    .Any(Expression))
-                    .ToList();
-
-                foreach (var type in types)
-                {
-                    dynamic? configuration = Activator.CreateInstance(type);
-
-                    if (configuration != null)
-                    {
-                        modelBuilder.ApplyConfiguration(configuration);
-                    }
-                }
+                modelBuilder.ApplyConfigurationsFromAssembly(assembly);
             }
 
             return modelBuilder;

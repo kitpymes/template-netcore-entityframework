@@ -7,31 +7,8 @@
 
 namespace Kitpymes.Core.EntityFramework
 {
-    using System.Data;
-    using System.Threading.Tasks;
-    using Kitpymes.Core.Repositories;
-
     /// <inheritdoc/>
-    public interface IEntityFrameworkUnitOfWork : IUnitOfWork
+    public interface IEntityFrameworkUnitOfWork : IEntityFrameworkDbContext
     {
-        /// <summary>
-        /// Abrir una conexión a una bade de datos.
-        /// </summary>
-        /// <param name="isolationLevel">Especifica el comportamiento de bloqueo de transacciones para la conexión.</param>
-        /// <returns>Task.</returns>
-        ValueTask OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
-
-        /// <summary>
-        /// Guarda una operación en la base de datos.
-        /// </summary>
-        /// <param name="useChangeTracker">Si utiliza el seguimiento de la operación.</param>
-        /// <returns>Task.</returns>
-        ValueTask SaveAsync(bool useChangeTracker = true);
-
-        /// <summary>
-        /// Guarda una operación en la base de datos.
-        /// </summary>
-        /// <param name="useChangeTracker">Si utiliza el seguimiento de la operación.</param>
-        void Save(bool useChangeTracker = true);
     }
 }

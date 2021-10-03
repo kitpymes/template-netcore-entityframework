@@ -2,7 +2,7 @@
 
 namespace Kitpymes.Core.EntityFramework.Tests
 {
-    public class FakeContext : EntityFrameworkContext
+    public class FakeContext : EntityFrameworkDbContext
     {
         public FakeContext(DbContextOptions<FakeContext> options) : base(options) { }
 

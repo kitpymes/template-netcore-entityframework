@@ -1,5 +1,5 @@
 ﻿// -----------------------------------------------------------------------
-// <copyright file="EntityFrameworkUnitOfWork.cs" company="Kitpymes">
+// <copyright file="EntityFrameworkDbContext.cs" company="Kitpymes">
 // Copyright (c) Kitpymes. All rights reserved.
 // Licensed under the MIT license. See LICENSE file in the project docs folder for full license information.
 // </copyright>
@@ -13,28 +13,32 @@ namespace Kitpymes.Core.EntityFramework
     using System.Threading.Tasks;
     using Kitpymes.Core.Shared;
     using Microsoft.EntityFrameworkCore;
-    using Microsoft.EntityFrameworkCore.ChangeTracking;
     using Microsoft.EntityFrameworkCore.Storage;
 
-    /// <inheritdoc/>
-    public abstract class EntityFrameworkUnitOfWork<TDbContext> : IEntityFrameworkUnitOfWork
-        where TDbContext : DbContext
+    /*
+       Clase de extensión EntityFrameworkDbContext
+       Contiene el contexto base para entity framework
+    */
+
+    /// <summary>
+    /// Clase de extensión <c>EntityFrameworkDbContext</c>.
+    /// Contiene el contexto base para entity framework.
+    /// </summary>
+    /// <remarks>
+    /// <para>En esta clase se pueden agregar todas las acciones comunes para el contexto de entity framework.</para>
+    /// </remarks>
+    public class EntityFrameworkDbContext : DbContext, IEntityFrameworkDbContext
     {
         /// <summary>
-        /// Inicializa una nueva instancia de la clase <see cref="EntityFrameworkUnitOfWork{TDbContext}"/>.
+        /// Inicializa una nueva instancia de la clase <see cref="EntityFrameworkDbContext"/>.
         /// </summary>
-        /// <param name="context">Contexto de datos.</param>
-        public EntityFrameworkUnitOfWork(TDbContext context)
-        => Context = context.ToIsNullOrEmptyThrow(nameof(context));
+        /// <param name="options">Configuración del contexto.</param>
+        protected EntityFrameworkDbContext(DbContextOptions options)
+            : base(options)
+        { }
 
         /// <inheritdoc/>
         public IDbContextTransaction Transaction { get; private set; } = null!;
-
-        private TDbContext Context { get; }
-
-        /// <inheritdoc/>
-        public EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
-            where TEntity : class => Context.Entry(entity);
 
         #region Transaction
 
@@ -46,7 +50,7 @@ namespace Kitpymes.Core.EntityFramework
                 Transaction.Dispose();
             }
 
-            Transaction = Context.Database.BeginTransaction(isolationLevel);
+            Transaction = Database.BeginTransaction(isolationLevel);
         }
 
         /// <inheritdoc/>
@@ -57,7 +61,7 @@ namespace Kitpymes.Core.EntityFramework
                 await Transaction.DisposeAsync();
             }
 
-            Transaction = await Context.Database.BeginTransactionAsync(isolationLevel);
+            Transaction = await Database.BeginTransactionAsync(isolationLevel);
         }
 
         #endregion Transaction
@@ -69,7 +73,7 @@ namespace Kitpymes.Core.EntityFramework
         {
             try
             {
-                Context.WithChangeTracker(useChangeTracker).SaveChanges();
+                this.WithChangeTracker(useChangeTracker).SaveChanges();
 
                 if (Transaction is not null)
                 {
@@ -89,7 +93,7 @@ namespace Kitpymes.Core.EntityFramework
         {
             try
             {
-                await Context.WithChangeTracker(useChangeTracker).SaveChangesAsync();
+                await this.WithChangeTracker(useChangeTracker).SaveChangesAsync();
 
                 if (Transaction is not null)
                 {
@@ -117,9 +121,9 @@ namespace Kitpymes.Core.EntityFramework
 
             if (this is not null)
             {
-                Context.Database.CloseConnection();
+                Database.CloseConnection();
 
-                Context.Dispose();
+                Dispose();
             }
         }
 
@@ -132,9 +136,9 @@ namespace Kitpymes.Core.EntityFramework
 
             if (this is not null)
             {
-                await Context.Database.CloseConnectionAsync();
+                await Database.CloseConnectionAsync();
 
-                await Context.DisposeAsync();
+                await DisposeAsync();
             }
         }
 

@@ -42,18 +42,6 @@ namespace Kitpymes.Core.EntityFramework
         }
 
         /// <summary>
-        /// Indica si se habilita las transacciones.
-        /// </summary>
-        /// <param name="enabled">Si se habilita o no.</param>
-        /// <returns>EntityFrameworkOptions.</returns>
-        public virtual EntityFrameworkOptions WithTransaction(bool enabled = true)
-        {
-            EntityFrameworkSettings.IsTransactionEnabled = enabled;
-
-            return this;
-        }
-
-        /// <summary>
         /// Indica si se habilita la creación de la base de datos si no existe.
         /// No utiliza migraciones para crear la base de datos y, por lo tanto, no se puede actualizar posteriormente mediante migraciones.
         /// </summary>

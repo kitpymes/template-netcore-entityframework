@@ -56,12 +56,17 @@ namespace Kitpymes.Core.EntityFramework
                         modelBuilder?.Entity(entity).HasOne(tenantType).WithMany().HasForeignKey(ITenant.TenantId).OnDelete(DeleteBehavior.Restrict);
                     }
 
-                    if (typeof(IStatus).IsAssignableFrom(entity))
+                    if (typeof(IActive).IsAssignableFrom(entity))
                     {
-                        modelBuilder?.Entity(entity).Property<StatusEnum>(IStatus.Status)
-                            .HasConversion(EntityFrameworkConverter.ToStatus())
-                            .HasMaxLength(StatusEnum.Inactive.ToString().Length)
-                            .HasDefaultValue(StatusEnum.Active)
+                        modelBuilder?.Entity(entity).Property<bool>(IActive.IsActive)
+                            .HasDefaultValue(true)
+                            .IsRequired();
+                    }
+
+                    if (typeof(IDelete).IsAssignableFrom(entity))
+                    {
+                        modelBuilder?.Entity(entity).Property<bool>(IDelete.IsDelete)
+                            .HasDefaultValue(false)
                             .IsRequired();
                     }
 

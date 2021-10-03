@@ -30,7 +30,7 @@ namespace Kitpymes.Core.EntityFramework
     public static class GlobalFiltersExtensions
     {
         /// <summary>
-        /// Agrega un filtro que setea el id del inquilino.
+        /// Para filtrar por el id del inquilino.
         /// </summary>
         /// <param name="modelBuilder">Modelo de entidades.</param>
         /// <returns>ModelBuilder | ApplicationException: modelBuilder es nulo.</returns>
@@ -43,6 +43,36 @@ namespace Kitpymes.Core.EntityFramework
                 modelBuilder.WithFilter<ITenant>(property
                     => EF.Property<string>(property, ITenant.TenantId) == AppSession.Tenant.Id);
             }
+
+            return modelBuilder;
+        }
+
+        /// <summary>
+        /// Para filtrar por los objetos activos.
+        /// </summary>
+        /// <param name="modelBuilder">Modelo de entidades.</param>
+        /// <returns>ModelBuilder | ApplicationException: modelBuilder es nulo.</returns>
+        public static ModelBuilder WithActiveFilter(this ModelBuilder modelBuilder)
+        {
+            modelBuilder.ToIsNullOrEmptyThrow(nameof(modelBuilder));
+
+            modelBuilder.WithFilter<IActive>(property
+                     => EF.Property<bool>(property, IActive.IsActive) == true);
+
+            return modelBuilder;
+        }
+
+        /// <summary>
+        /// Para filtrar por los objetos no eliminados.
+        /// </summary>
+        /// <param name="modelBuilder">Modelo de entidades.</param>
+        /// <returns>ModelBuilder | ApplicationException: modelBuilder es nulo.</returns>
+        public static ModelBuilder WithNotDeletedFilter(this ModelBuilder modelBuilder)
+        {
+            modelBuilder.ToIsNullOrEmptyThrow(nameof(modelBuilder));
+
+            modelBuilder.WithFilter<IDelete>(property
+                     => EF.Property<bool>(property, IDelete.IsDelete) == false);
 
             return modelBuilder;
         }

@@ -25,11 +25,6 @@ namespace Kitpymes.Core.EntityFramework
     public class EntityFrameworkSettings
     {
         /// <summary>
-        /// Si se habilitan las transacciones.
-        /// </summary>
-        public const bool DefaultIsTransactionEnabled = false;
-
-        /// <summary>
         /// Si se habilita la eliminación de la base de datos si esta existe.
         /// </summary>
         public const bool DefaultIsEnsuredCreatedEnabled = false;
@@ -44,7 +39,6 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         public const bool DefaultIsMigrateEnabled = false;
 
-        private bool isTransactionEnabled = DefaultIsTransactionEnabled;
         private bool isEnsuredCreatedEnabled = DefaultIsEnsuredCreatedEnabled;
         private bool isEnsuredDeletedEnabled = DefaultIsEnsuredDeletedEnabled;
         private bool isMigrateEnabled = DefaultIsMigrateEnabled;
@@ -53,21 +47,6 @@ namespace Kitpymes.Core.EntityFramework
         /// Obtiene o establece un valor de la configuración del contexto.
         /// </summary>
         public Action<DbContextOptionsBuilder>? DbContextOptionsBuilder { get; set; }
-
-        /// <summary>
-        /// Obtiene o establece un valor que indica si se habilitan las transacciones.
-        /// </summary>
-        public bool? IsTransactionEnabled
-        {
-            get => isTransactionEnabled;
-            set
-            {
-                if (value.HasValue)
-                {
-                    isTransactionEnabled = value.Value;
-                }
-            }
-        }
 
         /// <summary>
         /// Obtiene o establece un valor que indica si se habilita la creación de la base de datos si no existe.

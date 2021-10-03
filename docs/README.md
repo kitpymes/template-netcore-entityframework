@@ -44,7 +44,7 @@ dotnet add package Kitpymes.Core.EntityFramework
 ```cs
 public static class ConfigurationsExtensions
 {
-    public static ModelBuilder WithEntitiesConfigurations(this ModelBuilder modelBuilder, bool enabled = true) {}
+    public static ModelBuilder WithEntitiesConfigurations(this ModelBuilder modelBuilder, Assembly assembly, bool enabled = true) {}
 }
 ```
 
@@ -165,8 +165,6 @@ public class EntityFrameworkOptions
 
     public EntityFrameworkOptions WithDbContextOptions(Action<DbContextOptionsBuilder> dbContextOptionsBuilder) {}
 
-    public EntityFrameworkOptions WithTransaction(bool enabled = true) {}
-
     public EntityFrameworkOptions WithEnsuredCreated(bool enabled = true) {}
 
     public EntityFrameworkOptions WithMigrateEnabled(bool enabled = true) {}
@@ -179,8 +177,6 @@ public class EntityFrameworkOptions
 public class EntityFrameworkSettings
 {
     public Action<DbContextOptionsBuilder>? DbContextOptionsBuilder { get; set; }
-
-    public bool? IsTransactionEnabled { get; set; } = false;
 
     public bool? IsEnsuredCreatedEnabled { get; set; } = false;
 
@@ -217,42 +213,65 @@ public class SqlServerSettings : EntityFrameworkSettings
 ### UnitOfWork
 
 ```cs
-public interface IEntityFrameworkUnitOfWork : IUnitOfWork
+public interface IEntityFrameworkUnitOfWork : IEntityFrameworkDbContext
 {
-    ValueTask OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
-
-    ValueTask SaveAsync(bool useChangeTracker = true);
-
-    void Save(bool useChangeTracker = true);
 }
 ```
 
 ```cs
-public class EntityFrameworkUnitOfWork<TDbContext> : IEntityFrameworkUnitOfWork
+public abstract class EntityFrameworkUnitOfWork<TDbContext> : IEntityFrameworkUnitOfWork
     where TDbContext : DbContext
 {
     public EntityFrameworkUnitOfWork(TDbContext context) {}
 
+    public IDbContextTransaction Transaction { get; }
+
     public virtual void OpenTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted) {}
 
-    public virtual async ValueTask OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted) {}
-
-    public virtual void Save() {}
+    public virtual async Task OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted) {}
 
     public virtual void Save(bool useChangeTracker = true) {}
 
-    public virtual async ValueTask SaveAsync(bool useChangeTracker = true) {}
+    public virtual async Task SaveAsync(bool useChangeTracker = true) {}
 }
 ```
 
-### Context
+### DbContext
 
 ```cs
-public abstract class EntityFrameworkContext : DbContext
+public interface IEntityFrameworkDbContext
 {
-    protected EntityFrameworkContext(DbContextOptions options)
+    IDbContextTransaction Transaction { get; }
+
+    void OpenTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
+
+    Task OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
+
+    void Save(bool useChangeTracker = true);
+
+    Task SaveAsync(bool useChangeTracker = true);
+
+    EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
+        where TEntity : class;
+}
+```
+
+```cs
+public class EntityFrameworkDbContext : DbContext, IEntityFrameworkDbContext
+{
+    protected EntityFrameworkDbContext(DbContextOptions options)
         : base(options)
     { }
+
+    public IDbContextTransaction Transaction { get; }
+
+    public virtual void OpenTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted) {}
+
+    public virtual async Task OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted) {}
+
+    public virtual void Save(bool useChangeTracker = true) {}
+
+    public virtual async Task SaveAsync(bool useChangeTracker = true) {}
 }
 ```
 
