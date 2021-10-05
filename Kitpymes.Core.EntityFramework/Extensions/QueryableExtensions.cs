@@ -35,13 +35,7 @@ namespace Kitpymes.Core.EntityFramework
         /// <returns>IQueryable{T} | ApplicationException: context es nulo.</returns>
         public static IQueryable<T> ToQueryable<T>(this DbContext context)
             where T : class
-        {
-            var validContext = context.ToIsNullOrEmptyThrow(nameof(context));
-
-            validContext.WithDetectChangesLazyLoading(false);
-
-            return validContext.Set<T>().AsNoTracking();
-        }
+        => context.WithOptimizedContext(false).Set<T>();
 
         /// <summary>
         /// Incluye entidades asociadas a la consulta.

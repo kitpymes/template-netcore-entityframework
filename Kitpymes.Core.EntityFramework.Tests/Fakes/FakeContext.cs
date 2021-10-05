@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using System.Reflection;
 
 namespace Kitpymes.Core.EntityFramework.Tests
 {
@@ -8,8 +9,7 @@ namespace Kitpymes.Core.EntityFramework.Tests
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            modelBuilder.ApplyConfiguration(new FakeEntityConfiguration());
-            modelBuilder.ApplyConfiguration(new FakeEntityChildConfiguration());
+            modelBuilder.WithEntitiesConfigurations(Assembly.GetExecutingAssembly());
         }
     }
 }

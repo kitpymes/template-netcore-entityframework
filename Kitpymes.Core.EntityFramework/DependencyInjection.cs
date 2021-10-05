@@ -141,15 +141,14 @@ namespace Kitpymes.Core.EntityFramework
             this IServiceCollection services,
             Action<InMemoryDbContextOptionsBuilder>? inMemoryDbContextOptions = null,
             string? databaseName = null)
-                where TDbContext : EntityFrameworkDbContext
+                where TDbContext : DbContext
         {
-            var settings = new EntityFrameworkSettings
-            {
-                DbContextOptionsBuilder = dbContextOptions
-                    => dbContextOptions.UseInMemoryDatabase(databaseName ?? typeof(TDbContext).Name, inMemoryDbContextOptions),
-            };
+            var context = services
+                .AddDbContext<TDbContext>(options =>
+                     options.UseInMemoryDatabase(databaseName ?? typeof(TDbContext).Name, inMemoryDbContextOptions))
+                        .ToService<TDbContext>();
 
-            return services.LoadContext<TDbContext>(settings);
+            return context!;
         }
 
         #endregion Inmemory

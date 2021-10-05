@@ -49,9 +49,20 @@ public static class ConfigurationsExtensions
 ```
 
 ```cs
-public static class DetectChangesLazyLoadingExtensions
+public static class GetEntityTypesExtensions
 {
-    public static DbContext WithDetectChangesLazyLoading(this DbContext context, bool enabled = true) {}
+    public static IEnumerable<Type> GetEntityTypes(
+        this ModelBuilder modelBuilder,
+        Func<IMutableEntityType, bool> predicate) {}
+    
+    public static IEnumerable<Type> GetEntityTypes<TType>(this ModelBuilder modelBuilder) {}
+}
+```
+
+```cs
+public static class OptimizedContextExtensions
+{
+    public static DbContext WithOptimizedContext(this DbContext context, bool enabled = true) {}
 }
 ```
 
@@ -110,7 +121,11 @@ public static class EntityFrameworkServiceCollectionExtensions
 ```cs
 public static class GlobalFiltersExtensions
 {
-    public static ModelBuilder WithTenantFilter(this ModelBuilder modelBuilder) {}
+    public static ModelBuilder WithTenantFilter(this ModelBuilder modelBuilder, bool enabled = true) {}
+
+    public static ModelBuilder WithActiveFilter(this ModelBuilder modelBuilder, bool enabled = true) {}
+
+    public static ModelBuilder WithDeleteFilter(this ModelBuilder modelBuilder, bool enabled = true) {}
 
     public static void WithFilter<TInterface>(this ModelBuilder modelBuilder, Expression<Func<TInterface, bool>> expression) {}
 }
@@ -132,12 +147,18 @@ public static class QueryableExtensions
 ```cs
 public static class ShadowPropertiesExtensions
 {
-    public static ModelBuilder WithShadowProperties(this ModelBuilder modelBuilder) {}
+    public static ModelBuilder WithTenantShadowProperty<TTenant>(this ModelBuilder modelBuilder, bool enabled = true) {}
+
+    public static ModelBuilder WithActiveShadowProperty(this ModelBuilder modelBuilder, bool enabled = true) {}
+
+    public static ModelBuilder WithDeleteShadowProperty(this ModelBuilder modelBuilder, bool enabled = true) {}
+
+    public static ModelBuilder WithAuditedShadowProperties<TUser>(this ModelBuilder modelBuilder, bool enabled = true) {}
 }
 ```
 
-
 ### Helpers
+
 
 ```cs
 public abstract class EntityFrameworkConverter
@@ -213,8 +234,17 @@ public class SqlServerSettings : EntityFrameworkSettings
 ### UnitOfWork
 
 ```cs
-public interface IEntityFrameworkUnitOfWork : IEntityFrameworkDbContext
+public interface IEntityFrameworkUnitOfWork
 {
+    IDbContextTransaction Transaction { get; }
+
+    void OpenTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
+
+    Task OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
+
+    void Save(bool useChangeTracker = true);
+
+    Task SaveAsync(bool useChangeTracker = true);
 }
 ```
 

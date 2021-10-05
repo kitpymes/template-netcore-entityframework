@@ -400,13 +400,15 @@ namespace Kitpymes.Core.EntityFramework.Tests
         [TestMethod]
         public void Update()
         {
-            var entity = new FakeEntity(1L, Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), new FakeValueObject());
+            var id = 1L;
 
-            repository.Update(1L, entity);
+            var entity = new FakeEntity(id, Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), new FakeValueObject());
+
+            repository.Update(id, entity);
 
             context.SaveChanges();
 
-            var entityDatabase = repository.Find(1L);
+            var entityDatabase = repository.Find(id);
 
             Assert.AreEqual(entity.Name, entityDatabase.Name);
         }
@@ -414,17 +416,19 @@ namespace Kitpymes.Core.EntityFramework.Tests
         [TestMethod]
         public void UpdateSelect()
         {
-            var entityDatabase = repository.Find(1L);
+            var id = 1L;
+
+            var entityDatabase = repository.Find(id);
 
             Assert.IsNotNull(entityDatabase);
 
-            var entity = new FakeEntity(1L, Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), new FakeValueObject());
+            var entity = new FakeEntity(id, Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), new FakeValueObject());
 
-            repository.Update(1L, entity);
+            repository.Update(id, entity);
 
             context.SaveChanges();
 
-            entityDatabase = repository.Find(1L);
+            entityDatabase = repository.Find(id);
 
             Assert.AreEqual(entity.Name, entityDatabase.Name);
         }
@@ -432,13 +436,15 @@ namespace Kitpymes.Core.EntityFramework.Tests
         [TestMethod]
         public void UpdateAsynchronous()
         {
-            var entity = new FakeEntity(1L, Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), new FakeValueObject());
+            var id = 1L;
 
-            repository.UpdateAsync(1L, entity);
+            var entity = new FakeEntity(id, Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), new FakeValueObject());
+
+            repository.UpdateAsync(id, entity);
 
             context.SaveChanges();
 
-            var entityDatabase = repository.Find(1L);
+            var entityDatabase = repository.Find(id);
 
             Assert.AreEqual(entity.Name, entityDatabase.Name);
         }
@@ -446,16 +452,18 @@ namespace Kitpymes.Core.EntityFramework.Tests
         [TestMethod]
         public void UpdatePartial()
         {
+            var id = 1L;
+
             var entity = new
             {
                 Name = Guid.NewGuid().ToString()
             };
 
-            repository.UpdatePartial(1L, entity);
+            repository.UpdatePartial(id, entity);
 
             context.SaveChanges();
 
-            var entityDatabase = repository.Find(1L);
+            var entityDatabase = repository.Find(id);
 
             Assert.AreEqual(entity.Name, entityDatabase.Name);
             Assert.IsNotNull(entityDatabase.Surname);
@@ -464,13 +472,15 @@ namespace Kitpymes.Core.EntityFramework.Tests
         [TestMethod]
         public void UpdateValueObject()
         {
-            var entity = new FakeEntity(1L, Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), new FakeValueObject(Guid.NewGuid().ToString(), Guid.NewGuid().ToString()));
+            var id = 1L;
 
-            repository.Update(1L, entity);
+            var entity = new FakeEntity(id, Guid.NewGuid().ToString(), Guid.NewGuid().ToString(), new FakeValueObject(Guid.NewGuid().ToString(), Guid.NewGuid().ToString()));
+
+            repository.Update(id, entity);
 
             context.SaveChanges();
 
-            var entityDatabase = repository.Find(1L);
+            var entityDatabase = repository.Find(id);
 
             Assert.AreEqual(entity.FakeValueObject.Property1, entityDatabase.FakeValueObject.Property1);
             Assert.AreEqual(entity.FakeValueObject.Property2, entityDatabase.FakeValueObject.Property2);
@@ -578,7 +588,10 @@ namespace Kitpymes.Core.EntityFramework.Tests
 
         private void SeedDatabase()
         {
-            if (context.Set<FakeEntity>().Any()) { return; }
+            if (context.Set<FakeEntity>().Any()) 
+            { 
+                return; 
+            }
 
             for (var i = 1L; i <= 100; i++)
             {
@@ -592,9 +605,9 @@ namespace Kitpymes.Core.EntityFramework.Tests
         {
             return new FakeEntity
             (
-                $"Name {Guid.NewGuid()}",
-                $"Surname {Guid.NewGuid().ToString()}",
-                new FakeValueObject("Property", "Property")
+               name: Guid.NewGuid().ToString(),
+               surname:  Guid.NewGuid().ToString(),
+               fakeValueObject: new FakeValueObject("Property1", "Property2")
             );
         }
 

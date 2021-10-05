@@ -182,11 +182,11 @@ namespace Kitpymes.Core.EntityFramework
 
         /// <inheritdoc/>
         public T Find(object key)
-        => Context.WithDetectChangesLazyLoading(false).Set<T>().Find(key);
+        => Context.WithOptimizedContext(false).Set<T>().Find(key);
 
         /// <inheritdoc/>
         public async Task<T> FindAsync(object key)
-        => await Context.WithDetectChangesLazyLoading(false).Set<T>().FindAsync(key);
+        => await Context.WithOptimizedContext(false).Set<T>().FindAsync(key);
 
         #endregion Find
 
@@ -194,19 +194,19 @@ namespace Kitpymes.Core.EntityFramework
 
         /// <inheritdoc/>
         public void Add(T item)
-        => Context.WithDetectChangesLazyLoading(true).Set<T>().Add(item);
+        => Context.WithOptimizedContext().Set<T>().Add(item);
 
         /// <inheritdoc/>
         public async Task AddAsync(T item)
-        => await Context.WithDetectChangesLazyLoading(true).Set<T>().AddAsync(item);
+        => await Context.WithOptimizedContext().Set<T>().AddAsync(item);
 
         /// <inheritdoc/>
         public void AddRange(IEnumerable<T> items)
-        => Context.WithDetectChangesLazyLoading(true).Set<T>().AddRange(items);
+        => Context.WithOptimizedContext().Set<T>().AddRange(items);
 
         /// <inheritdoc/>
         public Task AddRangeAsync(IEnumerable<T> items)
-        => Context.WithDetectChangesLazyLoading(true).Set<T>().AddRangeAsync(items);
+        => Context.WithOptimizedContext().Set<T>().AddRangeAsync(items);
 
         #endregion Add
 
@@ -241,7 +241,7 @@ namespace Kitpymes.Core.EntityFramework
         /// <inheritdoc/>
         public void Delete(object key)
         {
-            var item = Context.WithDetectChangesLazyLoading(true).Set<T>().Find(key);
+            var item = Context.WithOptimizedContext().Set<T>().Find(key);
 
             if (item != default)
             {
@@ -252,7 +252,7 @@ namespace Kitpymes.Core.EntityFramework
         /// <inheritdoc/>
         public void Delete(Expression<Func<T, bool>> where)
         {
-            var items = Context.WithDetectChangesLazyLoading(true).Set<T>().Where(where);
+            var items = Context.WithOptimizedContext().Set<T>().Where(where);
 
             if (items.Any())
             {
@@ -335,7 +335,7 @@ namespace Kitpymes.Core.EntityFramework
 
         private void UpdateItem(object key, object item)
         {
-            var entity = Context.WithDetectChangesLazyLoading(true).Set<T>().Find(key);
+            var entity = Context.WithOptimizedContext(false).Set<T>().Find(key);
 
             var entry = Context.Entry(entity);
 

@@ -13,7 +13,6 @@ namespace Kitpymes.Core.EntityFramework
     using System.Threading.Tasks;
     using Kitpymes.Core.Shared;
     using Microsoft.EntityFrameworkCore;
-    using Microsoft.EntityFrameworkCore.ChangeTracking;
     using Microsoft.EntityFrameworkCore.Storage;
 
     /// <inheritdoc/>
@@ -31,10 +30,6 @@ namespace Kitpymes.Core.EntityFramework
         public IDbContextTransaction Transaction { get; private set; } = null!;
 
         private TDbContext Context { get; }
-
-        /// <inheritdoc/>
-        public EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
-            where TEntity : class => Context.Entry(entity);
 
         #region Transaction
 

@@ -30,7 +30,7 @@ namespace Kitpymes.Core.EntityFramework
         /// <param name="modelBuilder">Modelo de entidades.</param>
         /// <param name="assembly">Ensamblado donde se configuran las entidades.</param>
         /// <param name="enabled">Si se habilita la configuración.</param>
-        /// <returns>ModelBuilder | ApplicationException: modelBuilder es nulo.</returns>
+        /// <returns>ModelBuilder.</returns>
         public static ModelBuilder WithEntitiesConfigurations(this ModelBuilder modelBuilder, Assembly assembly, bool enabled = true)
         {
             if (enabled)

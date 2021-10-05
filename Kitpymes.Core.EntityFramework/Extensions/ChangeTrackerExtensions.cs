@@ -9,6 +9,7 @@ namespace Kitpymes.Core.EntityFramework
 {
     using System;
     using Kitpymes.Core.Entities;
+    using Kitpymes.Core.Shared;
     using Microsoft.EntityFrameworkCore;
 
     /*
@@ -39,6 +40,13 @@ namespace Kitpymes.Core.EntityFramework
                         {
                             case EntityState.Added:
                                 {
+                                    if (entry.Entity is ITenant)
+                                    {
+                                        var id = AppSession.Tenant?.Id.ToIsNullOrEmptyThrow("AppSession.Tenant?.Id");
+
+                                        entry.Property(ITenant.TenantId).CurrentValue = id;
+                                    }
+
                                     if (entry.Entity is IActive)
                                     {
                                         entry.Property(IActive.IsActive).CurrentValue = true;
@@ -53,7 +61,9 @@ namespace Kitpymes.Core.EntityFramework
                                     {
                                         entry.Property(ICreationAudited.CreatedDate).CurrentValue = timestamp;
 
-                                        entry.Property(ICreationAudited.CreatedUserId).CurrentValue = AppSession.User?.Id;
+                                        var id = AppSession.User?.Id.ToIsNullOrEmptyThrow("AppSession.User?.Id");
+
+                                        entry.Property(ICreationAudited.CreatedUserId).CurrentValue = id;
                                     }
 
                                     break;

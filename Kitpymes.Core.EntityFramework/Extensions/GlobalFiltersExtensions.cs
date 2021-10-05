@@ -33,15 +33,16 @@ namespace Kitpymes.Core.EntityFramework
         /// Para filtrar por el id del inquilino.
         /// </summary>
         /// <param name="modelBuilder">Modelo de entidades.</param>
-        /// <returns>ModelBuilder | ApplicationException: modelBuilder es nulo.</returns>
-        public static ModelBuilder WithTenantFilter(this ModelBuilder modelBuilder)
+        /// <param name="enabled">Si se habilita la configuración.</param>
+        /// <returns>ModelBuilder | ApplicationException: 'AppSession.Tenant?.Id' es nulo o vacío.</returns>
+        public static ModelBuilder WithTenantFilter(this ModelBuilder modelBuilder, bool enabled = true)
         {
-            modelBuilder.ToIsNullOrEmptyThrow(nameof(modelBuilder));
-
-            if (AppSession.Tenant != null && AppSession.Tenant.Enabled.HasValue && AppSession.Tenant.Enabled.Value)
+            if (enabled)
             {
+                var id = AppSession.Tenant?.Id.ToIsNullOrEmptyThrow("AppSession.Tenant?.Id");
+
                 modelBuilder.WithFilter<ITenant>(property
-                    => EF.Property<string>(property, ITenant.TenantId) == AppSession.Tenant.Id);
+                    => EF.Property<string>(property, ITenant.TenantId) == id);
             }
 
             return modelBuilder;
@@ -51,13 +52,15 @@ namespace Kitpymes.Core.EntityFramework
         /// Para filtrar por los objetos activos.
         /// </summary>
         /// <param name="modelBuilder">Modelo de entidades.</param>
-        /// <returns>ModelBuilder | ApplicationException: modelBuilder es nulo.</returns>
-        public static ModelBuilder WithActiveFilter(this ModelBuilder modelBuilder)
+        /// <param name="enabled">Si se habilita la configuración.</param>
+        /// <returns>ModelBuilder.</returns>
+        public static ModelBuilder WithActiveFilter(this ModelBuilder modelBuilder, bool enabled = true)
         {
-            modelBuilder.ToIsNullOrEmptyThrow(nameof(modelBuilder));
-
-            modelBuilder.WithFilter<IActive>(property
-                     => EF.Property<bool>(property, IActive.IsActive) == true);
+            if (enabled)
+            {
+                modelBuilder.WithFilter<IActive>(property
+                    => EF.Property<bool>(property, IActive.IsActive) == true);
+            }
 
             return modelBuilder;
         }
@@ -66,13 +69,15 @@ namespace Kitpymes.Core.EntityFramework
         /// Para filtrar por los objetos no eliminados.
         /// </summary>
         /// <param name="modelBuilder">Modelo de entidades.</param>
-        /// <returns>ModelBuilder | ApplicationException: modelBuilder es nulo.</returns>
-        public static ModelBuilder WithNotDeletedFilter(this ModelBuilder modelBuilder)
+        /// <param name="enabled">Si se habilita la configuración.</param>
+        /// <returns>ModelBuilder.</returns>
+        public static ModelBuilder WithDeleteFilter(this ModelBuilder modelBuilder, bool enabled = true)
         {
-            modelBuilder.ToIsNullOrEmptyThrow(nameof(modelBuilder));
-
-            modelBuilder.WithFilter<IDelete>(property
-                     => EF.Property<bool>(property, IDelete.IsDelete) == false);
+            if (enabled)
+            {
+                modelBuilder.WithFilter<IDelete>(property
+                    => EF.Property<bool>(property, IDelete.IsDelete) == false);
+            }
 
             return modelBuilder;
         }
@@ -85,12 +90,9 @@ namespace Kitpymes.Core.EntityFramework
         /// <param name="expression">Expresión a validar.</param>
         public static void WithFilter<TInterface>(this ModelBuilder modelBuilder, Expression<Func<TInterface, bool>> expression)
         {
-            var entities = modelBuilder.ToIsNullOrEmptyThrow(nameof(modelBuilder)).Model
-                .GetEntityTypes()
-                .Where(e => e.ClrType.GetInterface(typeof(TInterface).Name) != null)
-                .Select(e => e.ClrType);
+            var entities = modelBuilder.GetEntityTypes<TInterface>();
 
-            if (entities != null)
+            if (entities is not null)
             {
                 foreach (var entity in entities)
                 {
