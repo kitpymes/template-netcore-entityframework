@@ -31,25 +31,13 @@ namespace Kitpymes.Core.EntityFramework
         public SqlServerSettings SqlServerSettings { get; private set; } = new SqlServerSettings();
 
         /// <summary>
-        /// Indica si se habilita el log de errores.
-        /// </summary>
-        /// <param name="enabled">Si se habilita o no.</param>
-        /// <returns>SqlServerOptions.</returns>
-        public SqlServerOptions WithLogErrors(bool enabled = SqlServerSettings.DefaultIsLogErrorsEnabled)
-        {
-            SqlServerSettings.IsLogErrorsEnabled = enabled;
-
-            return this;
-        }
-
-        /// <summary>
         /// Conexión de la base de datos.
         /// </summary>
         /// <param name="connectionString">String de conexión.</param>
         /// <returns>SqlServerOptions.</returns>
         public SqlServerOptions WithConnectionString(string connectionString)
         {
-            SqlServerSettings.ConnectionString = connectionString;
+            SqlServerSettings.Connection = connectionString;
 
             return this;
         }
@@ -61,7 +49,7 @@ namespace Kitpymes.Core.EntityFramework
         /// <returns>SqlServerOptions.</returns>
         public SqlServerOptions WithSqlServerDbContextOptions(Action<SqlServerDbContextOptionsBuilder> sqlServerDbContextOptions)
         {
-            SqlServerSettings.SqlServerDbContextOptions = sqlServerDbContextOptions;
+            SqlServerSettings.SqlServerOptions = sqlServerDbContextOptions;
 
             return this;
         }
@@ -72,10 +60,9 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="enabled">Si se habilita o no.</param>
         /// <returns>SqlServerOptions.</returns>
-        public new SqlServerOptions WithEnsuredCreated(bool enabled = true)
+        public new SqlServerOptions WithCreate(bool enabled = true)
         {
-            SqlServerSettings.IsEnsuredCreatedEnabled = enabled;
-            SqlServerSettings.IsMigrateEnabled = !enabled;
+            base.WithCreate(enabled);
 
             return this;
         }
@@ -87,10 +74,9 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="enabled">Si se habilita o no.</param>
         /// <returns>SqlServerOptions.</returns>
-        public new SqlServerOptions WithMigrateEnabled(bool enabled = true)
+        public new SqlServerOptions WithMigrate(bool enabled = true)
         {
-            SqlServerSettings.IsMigrateEnabled = enabled;
-            SqlServerSettings.IsEnsuredCreatedEnabled = !enabled;
+            base.WithMigrate(enabled);
 
             return this;
         }
@@ -100,9 +86,21 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="enabled">Si se habilita o no.</param>
         /// <returns>SqlServerOptions.</returns>
-        public new SqlServerOptions WithEnsuredDeleted(bool enabled = true)
+        public new SqlServerOptions WithDelete(bool enabled = true)
         {
-            SqlServerSettings.IsEnsuredDeletedEnabled = enabled;
+            base.WithDelete(enabled);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Indica si se habilita el log de errores.
+        /// </summary>
+        /// <param name="enabled">Si se habilita o no.</param>
+        /// <returns>SqlServerOptions.</returns>
+        public new SqlServerOptions WithLogErrors(bool enabled = SqlServerSettings.DefaultLogErrors)
+        {
+            base.WithLogErrors(enabled);
 
             return this;
         }

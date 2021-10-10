@@ -39,10 +39,13 @@ namespace Kitpymes.Core.EntityFramework
         {
             if (enabled)
             {
-                var id = AppSession.Tenant?.Id.ToIsNullOrEmptyThrow("AppSession.Tenant?.Id");
+                if (AppSession.Tenant?.Enabled == true)
+                {
+                    var tenantId = AppSession.Tenant?.Id.ToIsNullOrEmptyThrow("AppSession.Tenant?.Id");
 
-                modelBuilder.WithFilter<ITenant>(property
-                    => EF.Property<string>(property, ITenant.TenantId) == id);
+                    modelBuilder.WithFilter<ITenant>(property
+                        => EF.Property<string>(property, ITenant.TenantId) == tenantId);
+                }
             }
 
             return modelBuilder;

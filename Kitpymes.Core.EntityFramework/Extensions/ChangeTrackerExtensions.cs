@@ -26,7 +26,13 @@ namespace Kitpymes.Core.EntityFramework
     /// </remarks>
     public static class ChangeTrackerExtensions
     {
-        internal static DbContext WithChangeTracker(this DbContext context, bool enabled = true)
+        /// <summary>
+        /// Detecta los cambios antes de guardar los datos al contexto.
+        /// </summary>
+        /// <param name="context">Contexto de la base de datos.</param>
+        /// <param name="enabled">Si se habilita.</param>
+        /// <returns>DbContext.</returns>
+        public static DbContext WithChangeTracker(this DbContext context, bool enabled = true)
         {
             if (enabled)
             {
@@ -42,9 +48,12 @@ namespace Kitpymes.Core.EntityFramework
                                 {
                                     if (entry.Entity is ITenant)
                                     {
-                                        var id = AppSession.Tenant?.Id.ToIsNullOrEmptyThrow("AppSession.Tenant?.Id");
+                                        if (AppSession.Tenant?.Enabled == true)
+                                        {
+                                            var tenantId = AppSession.Tenant?.Id.ToIsNullOrEmptyThrow("AppSession.Tenant?.Id");
 
-                                        entry.Property(ITenant.TenantId).CurrentValue = id;
+                                            entry.Property(ITenant.TenantId).CurrentValue = tenantId;
+                                        }
                                     }
 
                                     if (entry.Entity is IActive)
@@ -61,9 +70,7 @@ namespace Kitpymes.Core.EntityFramework
                                     {
                                         entry.Property(ICreationAudited.CreatedDate).CurrentValue = timestamp;
 
-                                        var id = AppSession.User?.Id.ToIsNullOrEmptyThrow("AppSession.User?.Id");
-
-                                        entry.Property(ICreationAudited.CreatedUserId).CurrentValue = id;
+                                        entry.Property(ICreationAudited.CreatedUserId).CurrentValue = AppSession.User?.Id;
                                     }
 
                                     break;

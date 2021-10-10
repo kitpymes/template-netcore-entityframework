@@ -34,9 +34,9 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="dbContextOptionsBuilder">Opciones del contexto.</param>
         /// <returns>EntityFrameworkOptions.</returns>
-        public virtual EntityFrameworkOptions WithDbContextOptions(Action<DbContextOptionsBuilder> dbContextOptionsBuilder)
+        public virtual EntityFrameworkOptions WithOptions(Action<DbContextOptionsBuilder> dbContextOptionsBuilder)
         {
-            EntityFrameworkSettings.DbContextOptionsBuilder = dbContextOptionsBuilder;
+            EntityFrameworkSettings.DbContextOptions = dbContextOptionsBuilder;
 
             return this;
         }
@@ -47,10 +47,10 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="enabled">Si se habilita o no.</param>
         /// <returns>EntityFrameworkOptions.</returns>
-        public virtual EntityFrameworkOptions WithEnsuredCreated(bool enabled = true)
+        public virtual EntityFrameworkOptions WithCreate(bool enabled = true)
         {
-            EntityFrameworkSettings.IsEnsuredCreatedEnabled = enabled;
-            EntityFrameworkSettings.IsMigrateEnabled = !enabled;
+            EntityFrameworkSettings.Create = enabled;
+            EntityFrameworkSettings.Migrate = !enabled;
 
             return this;
         }
@@ -62,10 +62,10 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="enabled">Si se habilita o no.</param>
         /// <returns>EntityFrameworkOptions.</returns>
-        public virtual EntityFrameworkOptions WithMigrateEnabled(bool enabled = true)
+        public virtual EntityFrameworkOptions WithMigrate(bool enabled = true)
         {
-            EntityFrameworkSettings.IsMigrateEnabled = enabled;
-            EntityFrameworkSettings.IsEnsuredCreatedEnabled = !enabled;
+            EntityFrameworkSettings.Create = enabled;
+            EntityFrameworkSettings.Migrate = !enabled;
 
             return this;
         }
@@ -75,9 +75,21 @@ namespace Kitpymes.Core.EntityFramework
         /// </summary>
         /// <param name="enabled">Si se habilita o no.</param>
         /// <returns>EntityFrameworkOptions.</returns>
-        public virtual EntityFrameworkOptions WithEnsuredDeleted(bool enabled = true)
+        public virtual EntityFrameworkOptions WithDelete(bool enabled = true)
         {
-            EntityFrameworkSettings.IsEnsuredDeletedEnabled = enabled;
+            EntityFrameworkSettings.Delete = enabled;
+
+            return this;
+        }
+
+        /// <summary>
+        /// Indica si se habilita el log de errores.
+        /// </summary>
+        /// <param name="enabled">Si se habilita o no.</param>
+        /// <returns>SqlServerOptions.</returns>
+        public EntityFrameworkOptions WithLogErrors(bool enabled = EntityFrameworkSettings.DefaultLogErrors)
+        {
+            EntityFrameworkSettings.LogErrors = enabled;
 
             return this;
         }

@@ -9,6 +9,7 @@ namespace Kitpymes.Core.EntityFramework
 {
     using System;
     using Microsoft.EntityFrameworkCore.Infrastructure;
+    using Newtonsoft.Json;
 
     /*
        Clase de configuración SqlServerSettings
@@ -25,35 +26,14 @@ namespace Kitpymes.Core.EntityFramework
     public class SqlServerSettings : EntityFrameworkSettings
     {
         /// <summary>
-        /// Si se habilita el log de errores.
+        /// Obtiene o establece la conexión de la base de datos.
         /// </summary>
-        public const bool DefaultIsLogErrorsEnabled = false;
-
-        private bool isLogErrorsEnabled = DefaultIsLogErrorsEnabled;
+        public string? Connection { get; set; }
 
         /// <summary>
         /// Obtiene o establece un valor de la configuración del contexto.
         /// </summary>
-        public Action<SqlServerDbContextOptionsBuilder>? SqlServerDbContextOptions { get; set; }
-
-        /// <summary>
-        /// Obtiene o establece la conexión de la base de datos.
-        /// </summary>
-        public string? ConnectionString { get; set; }
-
-        /// <summary>
-        /// Obtiene o establece un valor que indica si se habilita el log de errores.
-        /// </summary>
-        public bool? IsLogErrorsEnabled
-        {
-            get => isLogErrorsEnabled;
-            set
-            {
-                if (value.HasValue)
-                {
-                    isLogErrorsEnabled = value.Value;
-                }
-            }
-        }
+        [JsonIgnore]
+        public Action<SqlServerDbContextOptionsBuilder>? SqlServerOptions { get; set; }
     }
 }

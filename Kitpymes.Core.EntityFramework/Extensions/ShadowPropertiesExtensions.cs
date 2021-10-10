@@ -9,6 +9,7 @@ namespace Kitpymes.Core.EntityFramework
 {
     using System;
     using Kitpymes.Core.Entities;
+    using Kitpymes.Core.Shared;
     using Microsoft.EntityFrameworkCore;
 
     /*
@@ -37,16 +38,21 @@ namespace Kitpymes.Core.EntityFramework
         {
             if (enabled)
             {
-                var entities = modelBuilder.GetEntityTypes<ITenant>();
-
-                if (entities is not null)
+                if (AppSession.Tenant?.Enabled == true)
                 {
-                    foreach (var entity in entities)
+                    var tenantId = AppSession.Tenant?.Id.ToIsNullOrEmptyThrow("AppSession.Tenant?.Id");
+
+                    var entities = modelBuilder.GetEntityTypes<ITenant>();
+
+                    if (entities is not null)
                     {
-                        if (typeof(ITenant).IsAssignableFrom(entity))
+                        foreach (var entity in entities)
                         {
-                            modelBuilder?.Entity(entity).Property<string>(ITenant.TenantId).IsRequired();
-                            modelBuilder?.Entity(entity).HasOne(typeof(TTenant)).WithMany().HasForeignKey(ITenant.TenantId).OnDelete(DeleteBehavior.ClientSetNull);
+                            if (typeof(ITenant).IsAssignableFrom(entity))
+                            {
+                                modelBuilder?.Entity(entity).Property<string?>(ITenant.TenantId).HasDefaultValue(tenantId).ValueGeneratedOnAdd();
+                                modelBuilder?.Entity(entity).HasOne(typeof(TTenant)).WithMany().HasForeignKey(ITenant.TenantId).OnDelete(DeleteBehavior.ClientSetNull);
+                            }
                         }
                     }
                 }
@@ -133,26 +139,30 @@ namespace Kitpymes.Core.EntityFramework
 
                 if (entities is not null)
                 {
+                    var timestamp = DateTime.UtcNow;
+
                     foreach (var entity in entities)
                     {
                         if (typeof(ICreationAudited).IsAssignableFrom(entity))
                         {
-                            modelBuilder?.Entity(entity).Property<DateTime>(ICreationAudited.CreatedDate);
-                            modelBuilder?.Entity(entity).Property<string>(ICreationAudited.CreatedUserId);
+                            var userId = AppSession.User?.Id.ToIsNullOrEmptyThrow("AppSession.User?.Id");
+
+                            modelBuilder?.Entity(entity).Property<DateTime>(ICreationAudited.CreatedDate).HasDefaultValue(timestamp).ValueGeneratedOnAdd().IsRequired();
+                            modelBuilder?.Entity(entity).Property<string>(ICreationAudited.CreatedUserId).HasDefaultValue(userId).ValueGeneratedOnAdd().IsRequired();
                             modelBuilder?.Entity(entity).HasOne(typeof(TUser)).WithMany().HasForeignKey(ICreationAudited.CreatedUserId).OnDelete(DeleteBehavior.ClientSetNull);
                         }
 
                         if (typeof(IModificationAudited).IsAssignableFrom(entity))
                         {
-                            modelBuilder?.Entity(entity).Property<DateTime?>(IModificationAudited.ModifiedDate);
-                            modelBuilder?.Entity(entity).Property<string?>(IModificationAudited.ModifiedUserId);
+                            modelBuilder?.Entity(entity).Property<DateTime?>(IModificationAudited.ModifiedDate).HasDefaultValue(timestamp).ValueGeneratedOnUpdate();
+                            modelBuilder?.Entity(entity).Property<string?>(IModificationAudited.ModifiedUserId).HasDefaultValue(AppSession.User?.Id).ValueGeneratedOnUpdate();
                             modelBuilder?.Entity(entity).HasOne(typeof(TUser)).WithMany().HasForeignKey(IModificationAudited.ModifiedUserId).OnDelete(DeleteBehavior.ClientSetNull);
                         }
 
                         if (typeof(IDeletionAudited).IsAssignableFrom(entity))
                         {
-                            modelBuilder?.Entity(entity).Property<DateTime?>(IDeletionAudited.DeletedDate);
-                            modelBuilder?.Entity(entity).Property<string?>(IDeletionAudited.DeletedUserId);
+                            modelBuilder?.Entity(entity).Property<DateTime?>(IDeletionAudited.DeletedDate).HasDefaultValue(timestamp);
+                            modelBuilder?.Entity(entity).Property<string?>(IDeletionAudited.DeletedUserId).HasDefaultValue(AppSession.User?.Id);
                             modelBuilder?.Entity(entity).HasOne(typeof(TUser)).WithMany().HasForeignKey(IDeletionAudited.DeletedUserId).OnDelete(DeleteBehavior.ClientSetNull);
                         }
                     }

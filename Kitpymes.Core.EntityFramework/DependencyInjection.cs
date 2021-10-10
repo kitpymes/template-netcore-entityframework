@@ -12,6 +12,7 @@ namespace Kitpymes.Core.EntityFramework
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Infrastructure;
     using Microsoft.Extensions.DependencyInjection;
+    using Microsoft.Extensions.Hosting;
 
     /*
         Clase de extensión DependencyInjection
@@ -27,7 +28,65 @@ namespace Kitpymes.Core.EntityFramework
     /// </remarks>
     public static class DependencyInjection
     {
+        /// <summary>
+        /// Carga la configuración de la base de datos.
+        /// </summary>
+        /// <typeparam name="TDbContext">Tipo de contexto.</typeparam>
+        /// <param name="services">Collección de servicios.</param>
+        /// <returns>TDbContext | ApplicationException.</returns>
+        public static IServiceCollection LoadDatabase<TDbContext>(this IServiceCollection services)
+            where TDbContext : EntityFrameworkDbContext
+        {
+            var databaseSettings = services.ToSettings<DatabaseSettings>()
+                .ToIsNullOrEmptyThrow(nameof(DatabaseSettings));
+
+            var dbProvider = databaseSettings.DbProvider.ToEnum<DbProvider>();
+
+            switch (dbProvider)
+            {
+                case DbProvider.Memory:
+                    services.LoadInMemoryDatabase<TDbContext>();
+                    break;
+                case DbProvider.SqlServer:
+                    services.LoadSqlServer<TDbContext>(databaseSettings.SqlServerSettings);
+                    break;
+                case DbProvider.SQLite:
+                default:
+                    throw new Exception($"Unsupported database provider: {databaseSettings.DbProvider}");
+            }
+
+            return services;
+        }
+
         #region SqlServer
+
+        /// <summary>
+        /// Carga un contexto de datos.
+        /// </summary>
+        /// <typeparam name="TDbContext">Tipo de contexto.</typeparam>
+        /// <param name="services">Collección de servicios.</param>
+        /// <param name="sqlServerSettings">Configuración de sql server y entity framework.</param>
+        /// <returns>TDbContext | ApplicationException.</returns>
+        public static TDbContext LoadSqlServer<TDbContext>(
+           this IServiceCollection services,
+           SqlServerSettings? sqlServerSettings)
+        where TDbContext : EntityFrameworkDbContext
+        {
+            var settings = sqlServerSettings
+                .ToIsNullOrEmptyThrow(nameof(sqlServerSettings));
+
+            var isDevelopment = services.ToEnvironment().IsDevelopment();
+
+            var entityFrameworkSettings = settings as EntityFrameworkSettings;
+
+            entityFrameworkSettings.DbContextOptions = dbContextOptions => dbContextOptions
+                    .UseSqlServer(settings.Connection, settings.SqlServerOptions)
+                    .WithLogger(services, settings.LogErrors == true || isDevelopment);
+
+            var context = services.LoadContext<TDbContext>(entityFrameworkSettings);
+
+            return context;
+        }
 
         /// <summary>
         /// Carga un contexto de datos.
@@ -44,33 +103,6 @@ namespace Kitpymes.Core.EntityFramework
             var settings = sqlServerOptions.ToConfigureOrDefault().SqlServerSettings;
 
             return services.LoadSqlServer<TDbContext>(settings);
-        }
-
-        /// <summary>
-        /// Carga un contexto de datos.
-        /// </summary>
-        /// <typeparam name="TDbContext">Tipo de contexto.</typeparam>
-        /// <param name="services">Collección de servicios.</param>
-        /// <param name="sqlServerSettings">Configuración de sql server y entity framework.</param>
-        /// <returns>TDbContext | ApplicationException.</returns>
-        public static TDbContext LoadSqlServer<TDbContext>(
-            this IServiceCollection services,
-            SqlServerSettings sqlServerSettings)
-                where TDbContext : EntityFrameworkDbContext
-        {
-            var settings = sqlServerSettings.ToIsNullOrEmptyThrow(nameof(sqlServerSettings));
-
-            var connectionString = settings.ConnectionString.ToIsNullOrEmptyThrow(nameof(settings.ConnectionString));
-
-            services
-                .AddScoped<TDbContext>()
-                .AddScoped<IEntityFrameworkDbContext>(x => x.GetRequiredService<TDbContext>());
-
-            settings.DbContextOptionsBuilder = dbContextOptions => dbContextOptions
-                    .UseSqlServer(connectionString, settings.SqlServerDbContextOptions)
-                    .WithLogger(services, settings.IsLogErrorsEnabled == true);
-
-            return services.LoadContext<TDbContext>(settings);
         }
 
         #endregion SqlServer
@@ -110,17 +142,18 @@ namespace Kitpymes.Core.EntityFramework
                 where TDbContext : EntityFrameworkDbContext
                 where TUnitOfWork : EntityFrameworkUnitOfWork<TDbContext>
         {
-            var settings = sqlServerSettings.ToIsNullOrEmptyThrow(nameof(sqlServerSettings));
+            var settings = sqlServerSettings
+                .ToIsNullOrEmptyThrow(nameof(sqlServerSettings));
 
-            var connectionString = settings.ConnectionString.ToIsNullOrEmptyThrow(nameof(settings.ConnectionString));
+            var isDevelopment = services.ToEnvironment().IsDevelopment();
 
             services
                 .AddScoped<EntityFrameworkDbContext, TDbContext>()
                 .AddScoped<IEntityFrameworkUnitOfWork, TUnitOfWork>();
 
-            settings.DbContextOptionsBuilder = dbContextOptions => dbContextOptions
-                    .UseSqlServer(connectionString, settings.SqlServerDbContextOptions)
-                    .WithLogger(services, settings.IsLogErrorsEnabled == true);
+            settings.DbContextOptions = dbContextOptions => dbContextOptions
+                    .UseSqlServer(settings.Connection, settings.SqlServerOptions)
+                    .WithLogger(services, settings.LogErrors == true || isDevelopment);
 
             return services.LoadContext<TDbContext>(settings);
         }
@@ -184,28 +217,24 @@ namespace Kitpymes.Core.EntityFramework
            EntityFrameworkSettings entityFrameworkSettings)
                where TDbContext : DbContext
         {
-            var settings = entityFrameworkSettings.ToIsNullOrEmptyThrow(nameof(entityFrameworkSettings));
+            var settings = entityFrameworkSettings
+               .ToIsNullOrEmptyThrow(nameof(entityFrameworkSettings));
 
             var context = services
-                .AddDbContextPool<TDbContext>(settings.DbContextOptionsBuilder)
+                .AddDbContext<TDbContext>(settings.DbContextOptions, ServiceLifetime.Scoped)
                 .ToService<TDbContext>()
-                .ToIsNullOrEmptyThrow("context");
+                .ToIsNullOrEmptyThrow(typeof(TDbContext).Name);
 
-            if (settings.IsEnsuredCreatedEnabled == true && settings.IsMigrateEnabled == true)
-            {
-                Shared.Util.Check.Throw($"Properties {nameof(settings.IsEnsuredCreatedEnabled)} and {nameof(settings.IsMigrateEnabled)} cannot both be true");
-            }
-
-            if (settings.IsEnsuredDeletedEnabled == true)
+            if (settings.Delete == true)
             {
                 context.Database.EnsureDeleted();
             }
 
-            if (settings.IsEnsuredCreatedEnabled == true)
+            if (settings.Create == true)
             {
                 context.Database.EnsureCreated();
             }
-            else if (settings.IsMigrateEnabled == true)
+            else if (settings.Migrate == true)
             {
                 context.Database.Migrate();
             }

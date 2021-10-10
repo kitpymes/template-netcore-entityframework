@@ -9,6 +9,7 @@ namespace Kitpymes.Core.EntityFramework
 {
     using System;
     using Microsoft.EntityFrameworkCore;
+    using Newtonsoft.Json;
 
     /*
        Clase de configuración EntityFrameworkSettings
@@ -25,41 +26,64 @@ namespace Kitpymes.Core.EntityFramework
     public class EntityFrameworkSettings
     {
         /// <summary>
+        /// Valor por defecto que indica si esta habilitado el servicio.
+        /// </summary>
+        public const bool DefaultEnabled = false;
+
+        /// <summary>
         /// Si se habilita la eliminación de la base de datos si esta existe.
         /// </summary>
-        public const bool DefaultIsEnsuredCreatedEnabled = false;
+        public const bool DefaultCreate = false;
 
         /// <summary>
         /// Si se habilitan las migraciones.
         /// </summary>
-        public const bool DefaultIsEnsuredDeletedEnabled = false;
+        public const bool DefaultDelete = false;
 
         /// <summary>
         /// Si se habilita el log de errores.
         /// </summary>
-        public const bool DefaultIsMigrateEnabled = false;
-
-        private bool isEnsuredCreatedEnabled = DefaultIsEnsuredCreatedEnabled;
-        private bool isEnsuredDeletedEnabled = DefaultIsEnsuredDeletedEnabled;
-        private bool isMigrateEnabled = DefaultIsMigrateEnabled;
+        public const bool DefaultMigrate = false;
 
         /// <summary>
-        /// Obtiene o establece un valor de la configuración del contexto.
+        /// Si se habilita el log de errores.
         /// </summary>
-        public Action<DbContextOptionsBuilder>? DbContextOptionsBuilder { get; set; }
+        public const bool DefaultLogErrors = false;
+
+        private bool _enabled = DefaultEnabled;
+        private bool _create = DefaultCreate;
+        private bool _delete = DefaultDelete;
+        private bool _migrate = DefaultMigrate;
+        private bool _logErrors = DefaultLogErrors;
+
+        /// <summary>
+        /// Obtiene o establece un valor que indica el servicio esta habilitado.
+        /// <para><strong>Default:</strong> <see cref="DefaultEnabled"/> = false.</para>
+        /// </summary>
+        public bool? Enabled
+        {
+            get => _enabled;
+            set
+            {
+                if (value.HasValue)
+                {
+                    _enabled = value.Value;
+                }
+            }
+        }
 
         /// <summary>
         /// Obtiene o establece un valor que indica si se habilita la creación de la base de datos si no existe.
         /// No utiliza migraciones para crear la base de datos y, por lo tanto, no se puede actualizar posteriormente mediante migraciones.
         /// </summary>
-        public bool? IsEnsuredCreatedEnabled
+        public bool? Create
         {
-            get => isEnsuredCreatedEnabled;
+            get => _create;
             set
             {
                 if (value.HasValue)
                 {
-                    isEnsuredCreatedEnabled = value.Value;
+                    _create = value.Value;
                 }
             }
         }
@@ -67,14 +91,14 @@ namespace Kitpymes.Core.EntityFramework
         /// <summary>
         /// Obtiene o establece un valor que indica si se habilita la eliminación de la base de datos si esta existe.
         /// </summary>
-        public bool? IsEnsuredDeletedEnabled
+        public bool? Delete
         {
-            get => isEnsuredDeletedEnabled;
+            get => _delete;
             set
             {
                 if (value.HasValue)
                 {
-                    isEnsuredDeletedEnabled = value.Value;
+                    _delete = value.Value;
                 }
             }
         }
@@ -84,16 +108,38 @@ namespace Kitpymes.Core.EntityFramework
         /// Creará la base de datos si aún no existe.
         /// Es mutuamente excluyente con IsEnsuredDeletedEnabled.
         /// </summary>
-        public bool? IsMigrateEnabled
+        public bool? Migrate
         {
-            get => isMigrateEnabled;
+            get => _migrate;
             set
             {
                 if (value.HasValue)
                 {
-                    isMigrateEnabled = value.Value;
+                    _migrate = value.Value;
                 }
             }
         }
+
+        /// <summary>
+        /// Obtiene o establece un valor que indica si obtiene o establece un valor para habilitar el registro de errores del contexto.
+        /// </summary>
+        [JsonIgnore]
+        public bool? LogErrors
+        {
+            get => _logErrors;
+            set
+            {
+                if (value.HasValue)
+                {
+                    _logErrors = value.Value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Obtiene o establece un valor de la configuración del contexto.
+        /// </summary>
+        [JsonIgnore]
+        public Action<DbContextOptionsBuilder>? DbContextOptions { get; set; }
     }
 }

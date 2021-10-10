@@ -27,15 +27,16 @@ namespace Kitpymes.Core.EntityFramework
     /// <remarks>
     /// <para>En esta clase se pueden agregar todas las acciones comunes para el contexto de entity framework.</para>
     /// </remarks>
-    public class EntityFrameworkDbContext : DbContext, IEntityFrameworkDbContext
+    public abstract class EntityFrameworkDbContext : DbContext, IEntityFrameworkDbContext
     {
         /// <summary>
         /// Inicializa una nueva instancia de la clase <see cref="EntityFrameworkDbContext"/>.
         /// </summary>
         /// <param name="options">Configuración del contexto.</param>
-        protected EntityFrameworkDbContext(DbContextOptions options)
+        public EntityFrameworkDbContext(DbContextOptions options)
             : base(options)
-        { }
+        {
+        }
 
         /// <inheritdoc/>
         public IDbContextTransaction Transaction { get; private set; } = null!;
