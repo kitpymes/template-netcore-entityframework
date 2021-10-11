@@ -42,6 +42,60 @@ dotnet add package Kitpymes.Core.EntityFramework
 ### Extensions
 
 ```cs
+public static class DependencyInjection
+{
+    public static IServiceCollection LoadDatabase<TDbContext>(this IServiceCollection services)
+            where TDbContext : EntityFrameworkDbContext
+    {}
+
+     public static TDbContext LoadSqlServer<TDbContext>(
+        this IServiceCollection services,
+        SqlServerSettings? sqlServerSettings)
+            where TDbContext : EntityFrameworkDbContext
+    {}
+
+    public static TDbContext LoadSqlServer<TDbContext>(
+        this IServiceCollection services,
+        Action<SqlServerOptions> sqlServerOptions)
+            where TDbContext : EntityFrameworkDbContext
+    {}
+
+     public static TDbContext LoadSqlServer<TDbContext, TUnitOfWork>(
+        this IServiceCollection services,
+        Action<SqlServerOptions> sqlServerOptions)
+            where TDbContext : EntityFrameworkDbContext
+            where TUnitOfWork : EntityFrameworkUnitOfWork<TDbContext>
+    {}
+
+    public static TDbContext LoadSqlServer<TDbContext, TUnitOfWork>(
+        this IServiceCollection services,
+        SqlServerSettings sqlServerSettings)
+            where TDbContext : EntityFrameworkDbContext
+            where TUnitOfWork : EntityFrameworkUnitOfWork<TDbContext>
+    {}
+
+    public static TDbContext LoadInMemoryDatabase<TDbContext>(
+        this IServiceCollection services,
+        Action<InMemoryDbContextOptionsBuilder>? inMemoryDbContextOptions = null,
+        string? databaseName = null)
+            where TDbContext : DbContext
+    {}
+
+     public static TDbContext LoadContext<TDbContext>(
+        this IServiceCollection services,
+        Action<EntityFrameworkOptions> entityFrameworkOptions)
+            where TDbContext : DbContext
+    {}
+
+     public static TDbContext LoadContext<TDbContext>(
+        this IServiceCollection services,
+        EntityFrameworkSettings entityFrameworkSettings)
+            where TDbContext : DbContext
+    {}
+}
+```
+
+```cs
 public static class ConfigurationsExtensions
 {
     public static ModelBuilder WithEntitiesConfigurations(this ModelBuilder modelBuilder, Assembly assembly, bool enabled = true) {}
@@ -63,58 +117,6 @@ public static class GetEntityTypesExtensions
 public static class OptimizedContextExtensions
 {
     public static DbContext WithOptimizedContext(this DbContext context, bool enabled = true) {}
-}
-```
-
-```cs
-public static class EntityFrameworkServiceCollectionExtensions
-{
-   public static TDbContext LoadSqlServer<TDbContext, TUnitOfWork>(
-        this IServiceCollection services,
-        Action<SqlServerOptions> sqlServerOptions)
-            where TDbContext : EntityFrameworkContext
-            where TUnitOfWork : EntityFrameworkUnitOfWork<TDbContext>
-    {}
-
-    public static TDbContext LoadSqlServer<TDbContext, TUnitOfWork>(
-        this IServiceCollection services,
-        SqlServerSettings sqlServerSettings)
-            where TDbContext : EntityFrameworkContext
-            where TUnitOfWork : EntityFrameworkUnitOfWork<TDbContext>
-    {}
-
-    public static TDbContext LoadInMemoryDatabase<TDbContext>(
-        this IServiceCollection services,
-        Action<InMemoryDbContextOptionsBuilder>? inMemoryDbContextOptions = null,
-        string? databaseName = null)
-            where TDbContext : EntityFrameworkContext
-    {}
-
-    public static TDbContext LoadContext<TDbContext>(
-        this IServiceCollection services,
-        Action<EntityFrameworkOptions> entityFrameworkOptions)
-            where TDbContext : DbContext
-    {}
-
-    public static TDbContext LoadContext<TDbContext, TUnitOfWork>(
-        this IServiceCollection services,
-        Action<EntityFrameworkOptions> entityFrameworkOptions)
-            where TDbContext : DbContext
-            where TUnitOfWork : EntityFrameworkUnitOfWork<TDbContext>
-    {}
-
-    public static TDbContext LoadContext<TDbContext>(
-        this IServiceCollection services,
-        EntityFrameworkSettings entityFrameworkSettings)
-            where TDbContext : DbContext
-    {}
-
-    public static TDbContext LoadContext<TDbContext, TUnitOfWork>(
-        this IServiceCollection services,
-        EntityFrameworkSettings entityFrameworkSettings)
-            where TDbContext : DbContext
-            where TUnitOfWork : EntityFrameworkUnitOfWork<TDbContext>
-    {}
 }
 ```
 

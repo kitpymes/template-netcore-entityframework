@@ -1,3 +1,6 @@
+# v.1.1.2
+- Se actualizan librerías.
+
 # v.1.1.1
 - Se introducen mejoras en el proyecto.
 
