@@ -49,7 +49,6 @@ namespace Kitpymes.Core.EntityFramework
             try
             {
                 base.SaveChanges();
-
             }
             catch (Exception exception)
             {

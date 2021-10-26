@@ -51,12 +51,12 @@ namespace Kitpymes.Core.EntityFramework
                                 {
                                     if (entry.Entity is ITenant)
                                     {
-                                        //if (AppSession.Tenant?.Enabled == true)
-                                        //{
+                                        // if (AppSession.Tenant?.Enabled == true)
+                                        // {
                                         //    var tenantId = AppSession.Tenant?.Id.ToIsNullOrEmptyThrow("AppSession.Tenant?.Id");
 
-                                        //    entry.Property(ITenant.TenantId).CurrentValue = tenantId;
-                                        //}
+                                        // entry.Property(ITenant.TenantId).CurrentValue = tenantId;
+                                        // }
                                     }
 
                                     if (entry.Entity is IActive)

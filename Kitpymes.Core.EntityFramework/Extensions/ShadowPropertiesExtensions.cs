@@ -115,7 +115,7 @@ namespace Kitpymes.Core.EntityFramework
         }
 
         /// <summary>
-        /// Configura la propiedad 'RowVersion' a las entidades que implementen la interface 'IRowVersion'. 
+        /// Configura la propiedad 'RowVersion' a las entidades que implementen la interface 'IRowVersion'.
         /// </summary>
         /// <param name="modelBuilder">Modelo de entidades.</param>
         /// <param name="enabled">Si se habilita la configuración.</param>
