@@ -1,3 +1,10 @@
+# v.1.1.3
+- Se actualizan librerías.
+- Se agrega la configuración de la ShadowProperty "RowVersion".
+- Se actualizan las extensiones de "ChangeTrackerExtensions".
+- Se actualizan las extensiones de "ShadowPropertiesExtensions".
+- Se actualiza el contexto "IEntityFrameworkDbContext".
+
 # v.1.1.2
 - Se actualizan librerías.
 

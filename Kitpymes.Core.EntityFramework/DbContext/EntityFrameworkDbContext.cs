@@ -10,6 +10,7 @@ namespace Kitpymes.Core.EntityFramework
     using System;
     using System.Data;
     using System.Text;
+    using System.Threading;
     using System.Threading.Tasks;
     using Kitpymes.Core.Shared;
     using Microsoft.EntityFrameworkCore;
@@ -38,43 +39,37 @@ namespace Kitpymes.Core.EntityFramework
         {
         }
 
-        /// <inheritdoc/>
-        public IDbContextTransaction Transaction { get; private set; } = null!;
-
-        #region Transaction
-
-        /// <inheritdoc/>
-        public virtual void OpenTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
-        {
-            if (Transaction is not null)
-            {
-                Transaction.Dispose();
-            }
-
-            Transaction = Database.BeginTransaction(isolationLevel);
-        }
-
-        /// <inheritdoc/>
-        public virtual async Task OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
-        {
-            if (Transaction is not null)
-            {
-                await Transaction.DisposeAsync();
-            }
-
-            Transaction = await Database.BeginTransactionAsync(isolationLevel);
-        }
-
-        #endregion Transaction
+        private IDbContextTransaction Transaction { get; set; } = null!;
 
         #region Save
 
         /// <inheritdoc/>
-        public virtual void Save(bool useChangeTracker = true)
+        public new void SaveChanges()
         {
             try
             {
-                this.WithChangeTracker(useChangeTracker).SaveChanges();
+                base.SaveChanges();
+
+            }
+            catch (Exception exception)
+            {
+                ThrowSave(exception);
+            }
+        }
+
+        /// <inheritdoc/>
+        public void SaveChangesWithTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
+        {
+            try
+            {
+                if (Transaction is not null)
+                {
+                    Transaction.Dispose();
+                }
+
+                Transaction = Database.BeginTransaction(isolationLevel);
+
+                base.SaveChanges();
 
                 if (Transaction is not null)
                 {
@@ -90,11 +85,31 @@ namespace Kitpymes.Core.EntityFramework
         }
 
         /// <inheritdoc/>
-        public virtual async Task SaveAsync(bool useChangeTracker = true)
+        public new async Task SaveChangesAsync(CancellationToken cancellationToken = default)
         {
             try
             {
-                await this.WithChangeTracker(useChangeTracker).SaveChangesAsync();
+                await base.SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception exception)
+            {
+                await ThrowSaveAsync(exception);
+            }
+        }
+
+        /// <inheritdoc/>
+        public async Task SaveChangesWithTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                if (Transaction is not null)
+                {
+                    await Transaction.DisposeAsync();
+                }
+
+                Transaction = await Database.BeginTransactionAsync(isolationLevel);
+
+                await base.SaveChangesAsync(cancellationToken);
 
                 if (Transaction is not null)
                 {

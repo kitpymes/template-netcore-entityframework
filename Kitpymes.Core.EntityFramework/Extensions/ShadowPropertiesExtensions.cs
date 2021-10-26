@@ -9,7 +9,6 @@ namespace Kitpymes.Core.EntityFramework
 {
     using System;
     using Kitpymes.Core.Entities;
-    using Kitpymes.Core.Shared;
     using Microsoft.EntityFrameworkCore;
 
     /*
@@ -27,32 +26,32 @@ namespace Kitpymes.Core.EntityFramework
     public static class ShadowPropertiesExtensions
     {
         /// <summary>
-        /// Agrega y configura la propiedad 'TenantId' a las entidades que implementen la interface 'ITenant'.
+        /// Configura la propiedad 'TenantId' a las entidades que implementen la interface 'ITenant'.
         /// </summary>
         /// <typeparam name="TTenant">Tipo de dato de la clase tenant.</typeparam>
+        /// <typeparam name="TTenantId">Tipo de dato del id de tenant.</typeparam>
         /// <param name="modelBuilder">Modelo de entidades.</param>
+        /// <param name="tenantId">Id del tenant.</param>
         /// <param name="enabled">Si se habilita la configuración.</param>
         /// <returns>ModelBuilder.</returns>
-        public static ModelBuilder WithTenantShadowProperty<TTenant>(this ModelBuilder modelBuilder, bool enabled = true)
+        public static ModelBuilder WithTenantShadowProperty<TTenant, TTenantId>(
+            this ModelBuilder modelBuilder,
+            TTenantId tenantId,
+            bool enabled = true)
            where TTenant : IEntityBase
         {
             if (enabled)
             {
-                if (AppSession.Tenant?.Enabled == true)
+                var entities = modelBuilder.GetEntityTypes<ITenant>();
+
+                if (entities is not null)
                 {
-                    var tenantId = AppSession.Tenant?.Id.ToIsNullOrEmptyThrow("AppSession.Tenant?.Id");
-
-                    var entities = modelBuilder.GetEntityTypes<ITenant>();
-
-                    if (entities is not null)
+                    foreach (var entity in entities)
                     {
-                        foreach (var entity in entities)
+                        if (typeof(ITenant).IsAssignableFrom(entity))
                         {
-                            if (typeof(ITenant).IsAssignableFrom(entity))
-                            {
-                                modelBuilder?.Entity(entity).Property<string?>(ITenant.TenantId).HasDefaultValue(tenantId).ValueGeneratedOnAdd();
-                                modelBuilder?.Entity(entity).HasOne(typeof(TTenant)).WithMany().HasForeignKey(ITenant.TenantId).OnDelete(DeleteBehavior.ClientSetNull);
-                            }
+                            modelBuilder?.Entity(entity).Property(typeof(TTenantId), ITenant.TenantId).HasDefaultValue(tenantId).ValueGeneratedOnAdd();
+                            modelBuilder?.Entity(entity).HasOne(typeof(TTenant)).WithMany().HasForeignKey(ITenant.TenantId).OnDelete(DeleteBehavior.ClientSetNull);
                         }
                     }
                 }
@@ -62,7 +61,7 @@ namespace Kitpymes.Core.EntityFramework
         }
 
         /// <summary>
-        /// Agrega y configura la propiedad 'IsActive' a las entidades que implementen la interface 'IActive'.
+        /// Configura la propiedad 'IsActive' a las entidades que implementen la interface 'IActive'.
         /// </summary>
         /// <param name="modelBuilder">Modelo de entidades.</param>
         /// <param name="enabled">Si se habilita la configuración.</param>
@@ -89,7 +88,7 @@ namespace Kitpymes.Core.EntityFramework
         }
 
         /// <summary>
-        /// Agrega y configura la propiedad 'IsDelete' a las entidades que implementen la interface 'IDelete'.
+        /// Configura la propiedad 'IsDelete' a las entidades que implementen la interface 'IDelete'.
         /// </summary>
         /// <param name="modelBuilder">Modelo de entidades.</param>
         /// <param name="enabled">Si se habilita la configuración.</param>
@@ -116,6 +115,33 @@ namespace Kitpymes.Core.EntityFramework
         }
 
         /// <summary>
+        /// Configura la propiedad 'RowVersion' a las entidades que implementen la interface 'IRowVersion'. 
+        /// </summary>
+        /// <param name="modelBuilder">Modelo de entidades.</param>
+        /// <param name="enabled">Si se habilita la configuración.</param>
+        /// <returns>ModelBuilder.</returns>
+        public static ModelBuilder WithRowVersionShadowProperty(this ModelBuilder modelBuilder, bool enabled = true)
+        {
+            if (enabled)
+            {
+                var entities = modelBuilder.GetEntityTypes<IRowVersion>();
+
+                if (entities is not null)
+                {
+                    foreach (var entity in entities)
+                    {
+                        if (typeof(IRowVersion).IsAssignableFrom(entity))
+                        {
+                            modelBuilder?.Entity(entity).Property<long>(IRowVersion.RowVersion).IsRequired();
+                        }
+                    }
+                }
+            }
+
+            return modelBuilder;
+        }
+
+        /// <summary>
         ///  <para>
         ///     Agrega y configura la propiedad 'CreatedDate' y 'CreatedUserId' a las entidades que implementen la interface 'ICreationAudited'.
         ///  </para>
@@ -127,10 +153,11 @@ namespace Kitpymes.Core.EntityFramework
         ///  </para>
         /// </summary>
         /// <typeparam name="TUser">Tipo de dato de la clase user.</typeparam>
+        /// <typeparam name="TUserId">Tipo de dato del id de user.</typeparam>
         /// <param name="modelBuilder">Modelo de entidades.</param>
         /// <param name="enabled">Si se habilita la configuración.</param>
         /// <returns>ModelBuilder.</returns>
-        public static ModelBuilder WithAuditedShadowProperties<TUser>(this ModelBuilder modelBuilder, bool enabled = true)
+        public static ModelBuilder WithAuditedShadowProperties<TUser, TUserId>(this ModelBuilder modelBuilder, bool enabled = true)
             where TUser : IEntityBase
         {
             if (enabled)
@@ -139,31 +166,26 @@ namespace Kitpymes.Core.EntityFramework
 
                 if (entities is not null)
                 {
-                    var timestamp = DateTime.UtcNow;
+                    var userIdType = typeof(TUserId);
 
                     foreach (var entity in entities)
                     {
                         if (typeof(ICreationAudited).IsAssignableFrom(entity))
                         {
-                            var userId = AppSession.User?.Id.ToIsNullOrEmptyThrow("AppSession.User?.Id");
-
-                            modelBuilder?.Entity(entity).Property<DateTime>(ICreationAudited.CreatedDate).HasDefaultValue(timestamp).ValueGeneratedOnAdd().IsRequired();
-                            modelBuilder?.Entity(entity).Property<string>(ICreationAudited.CreatedUserId).HasDefaultValue(userId).ValueGeneratedOnAdd().IsRequired();
-                            modelBuilder?.Entity(entity).HasOne(typeof(TUser)).WithMany().HasForeignKey(ICreationAudited.CreatedUserId).OnDelete(DeleteBehavior.ClientSetNull);
+                            modelBuilder?.Entity(entity).Property<DateTime>(ICreationAudited.CreatedDate);
+                            modelBuilder?.Entity(entity).Property(userIdType, ICreationAudited.CreatedUserId);
                         }
 
                         if (typeof(IModificationAudited).IsAssignableFrom(entity))
                         {
-                            modelBuilder?.Entity(entity).Property<DateTime?>(IModificationAudited.ModifiedDate).HasDefaultValue(timestamp).ValueGeneratedOnUpdate();
-                            modelBuilder?.Entity(entity).Property<string?>(IModificationAudited.ModifiedUserId).HasDefaultValue(AppSession.User?.Id).ValueGeneratedOnUpdate();
-                            modelBuilder?.Entity(entity).HasOne(typeof(TUser)).WithMany().HasForeignKey(IModificationAudited.ModifiedUserId).OnDelete(DeleteBehavior.ClientSetNull);
+                            modelBuilder?.Entity(entity).Property<DateTime?>(IModificationAudited.ModifiedDate);
+                            modelBuilder?.Entity(entity).Property(userIdType, IModificationAudited.ModifiedUserId);
                         }
 
                         if (typeof(IDeletionAudited).IsAssignableFrom(entity))
                         {
-                            modelBuilder?.Entity(entity).Property<DateTime?>(IDeletionAudited.DeletedDate).HasDefaultValue(timestamp);
-                            modelBuilder?.Entity(entity).Property<string?>(IDeletionAudited.DeletedUserId).HasDefaultValue(AppSession.User?.Id);
-                            modelBuilder?.Entity(entity).HasOne(typeof(TUser)).WithMany().HasForeignKey(IDeletionAudited.DeletedUserId).OnDelete(DeleteBehavior.ClientSetNull);
+                            modelBuilder?.Entity(entity).Property<DateTime?>(IDeletionAudited.DeletedDate);
+                            modelBuilder?.Entity(entity).Property(userIdType, IDeletionAudited.DeletedUserId);
                         }
                     }
                 }

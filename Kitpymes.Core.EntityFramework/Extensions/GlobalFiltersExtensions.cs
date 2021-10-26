@@ -32,20 +32,20 @@ namespace Kitpymes.Core.EntityFramework
         /// <summary>
         /// Para filtrar por el id del inquilino.
         /// </summary>
+        /// <typeparam name="TTenantId">Tipo de dato del id de tenant.</typeparam>
         /// <param name="modelBuilder">Modelo de entidades.</param>
+        /// <param name="tenantId">Id del tenant.</param>
         /// <param name="enabled">Si se habilita la configuración.</param>
         /// <returns>ModelBuilder | ApplicationException: 'AppSession.Tenant?.Id' es nulo o vacío.</returns>
-        public static ModelBuilder WithTenantFilter(this ModelBuilder modelBuilder, bool enabled = true)
+        public static ModelBuilder WithTenantFilter<TTenantId>(
+            this ModelBuilder modelBuilder,
+            TTenantId tenantId,
+            bool enabled = true)
         {
             if (enabled)
             {
-                if (AppSession.Tenant?.Enabled == true)
-                {
-                    var tenantId = AppSession.Tenant?.Id.ToIsNullOrEmptyThrow("AppSession.Tenant?.Id");
-
-                    modelBuilder.WithFilter<ITenant>(property
-                        => EF.Property<string>(property, ITenant.TenantId) == tenantId);
-                }
+                modelBuilder.WithFilter<ITenant>(property
+                    => EF.Property<TTenantId>(property, ITenant.TenantId) !.Equals(tenantId));
             }
 
             return modelBuilder;

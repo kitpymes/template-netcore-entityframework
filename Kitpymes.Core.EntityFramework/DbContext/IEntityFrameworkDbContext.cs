@@ -8,9 +8,9 @@
 namespace Kitpymes.Core.EntityFramework
 {
     using System.Data;
+    using System.Threading;
     using System.Threading.Tasks;
     using Microsoft.EntityFrameworkCore.ChangeTracking;
-    using Microsoft.EntityFrameworkCore.Storage;
 
     /// <summary>
     /// En esta interfaz se pueden agregar todas las acciones comunes al contexto.
@@ -18,35 +18,30 @@ namespace Kitpymes.Core.EntityFramework
     public interface IEntityFrameworkDbContext
     {
         /// <summary>
-        /// Obtiene un valor para realizar transacciones.
-        /// </summary>
-        IDbContextTransaction Transaction { get; }
-
-        /// <summary>
-        /// Abrir una conexión a una bade de datos.
+        /// Guarda una operación en la base de datos con transacciones.
         /// </summary>
         /// <param name="isolationLevel">Especifica el comportamiento de bloqueo de transacciones para la conexión.</param>
-        void OpenTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
+        void SaveChangesWithTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
 
         /// <summary>
-        /// Abrir una conexión a una bade de datos.
+        /// Guarda una operación en la base de datos con transacciones.
         /// </summary>
         /// <param name="isolationLevel">Especifica el comportamiento de bloqueo de transacciones para la conexión.</param>
+        /// <param name="cancellationToken">Para observar mientras espera a que se complete la tarea.</param>
         /// <returns>Task.</returns>
-        Task OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
+        Task SaveChangesWithTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Guarda una operación en la base de datos.
         /// </summary>
-        /// <param name="useChangeTracker">Si utiliza el seguimiento de la operación.</param>
-        void Save(bool useChangeTracker = true);
+        void SaveChanges();
 
         /// <summary>
         /// Guarda una operación en la base de datos.
         /// </summary>
-        /// <param name="useChangeTracker">Si utiliza el seguimiento de la operación.</param>
+        /// <param name="cancellationToken">Para observar mientras espera a que se complete la tarea.</param>
         /// <returns>Task.</returns>
-        Task SaveAsync(bool useChangeTracker = true);
+        Task SaveChangesAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
         /// Proporciona acceso a información y operaciones de seguimiento de cambios para una entidad determinada.

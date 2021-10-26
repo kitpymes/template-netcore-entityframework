@@ -48,7 +48,13 @@ public static class DependencyInjection
             where TDbContext : EntityFrameworkDbContext
     {}
 
-     public static TDbContext LoadSqlServer<TDbContext>(
+    public static IServiceCollection LoadDatabase<TIDbContext, TDbContext>(
+            this IServiceCollection services)
+          where TIDbContext : class
+          where TDbContext : EntityFrameworkDbContext, TIDbContext
+    {}
+
+    public static TDbContext LoadSqlServer<TDbContext>(
         this IServiceCollection services,
         SqlServerSettings? sqlServerSettings)
             where TDbContext : EntityFrameworkDbContext
@@ -149,13 +155,20 @@ public static class QueryableExtensions
 ```cs
 public static class ShadowPropertiesExtensions
 {
-    public static ModelBuilder WithTenantShadowProperty<TTenant>(this ModelBuilder modelBuilder, bool enabled = true) {}
+    public static ModelBuilder WithTenantShadowProperty<TTenant, TTenantId>(
+            this ModelBuilder modelBuilder,
+            TTenantId tenantId,
+            bool enabled = true)
+           where TTenant : IEntityBase {}
 
     public static ModelBuilder WithActiveShadowProperty(this ModelBuilder modelBuilder, bool enabled = true) {}
 
     public static ModelBuilder WithDeleteShadowProperty(this ModelBuilder modelBuilder, bool enabled = true) {}
 
-    public static ModelBuilder WithAuditedShadowProperties<TUser>(this ModelBuilder modelBuilder, bool enabled = true) {}
+    public static ModelBuilder WithRowVersionShadowProperty(this ModelBuilder modelBuilder, bool enabled = true) {}
+
+    public static ModelBuilder WithAuditedShadowProperties<TUser, TUserId>(this ModelBuilder modelBuilder, bool enabled = true)
+            where TUser : IEntityBase {}
 }
 ```
 
@@ -244,9 +257,9 @@ public interface IEntityFrameworkUnitOfWork
 
     Task OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
 
-    void Save(bool useChangeTracker = true);
+    void SaveChanges();
 
-    Task SaveAsync(bool useChangeTracker = true);
+    Task SaveChangesAsync(CancellationToken cancellationToken = default);
 }
 ```
 
@@ -273,37 +286,16 @@ public abstract class EntityFrameworkUnitOfWork<TDbContext> : IEntityFrameworkUn
 ```cs
 public interface IEntityFrameworkDbContext
 {
-    IDbContextTransaction Transaction { get; }
+    void SaveChangesWithTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
 
-    void OpenTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
+    Task SaveChangesWithTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, CancellationToken cancellationToken = default);
 
-    Task OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
+    void SaveChanges();
 
-    void Save(bool useChangeTracker = true);
-
-    Task SaveAsync(bool useChangeTracker = true);
+    Task SaveChangesAsync(CancellationToken cancellationToken = default);
 
     EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
         where TEntity : class;
-}
-```
-
-```cs
-public class EntityFrameworkDbContext : DbContext, IEntityFrameworkDbContext
-{
-    protected EntityFrameworkDbContext(DbContextOptions options)
-        : base(options)
-    { }
-
-    public IDbContextTransaction Transaction { get; }
-
-    public virtual void OpenTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted) {}
-
-    public virtual async Task OpenTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted) {}
-
-    public virtual void Save(bool useChangeTracker = true) {}
-
-    public virtual async Task SaveAsync(bool useChangeTracker = true) {}
 }
 ```
 

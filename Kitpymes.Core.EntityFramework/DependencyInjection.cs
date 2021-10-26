@@ -58,6 +58,41 @@ namespace Kitpymes.Core.EntityFramework
             return services;
         }
 
+        /// <summary>
+        /// Carga la configuración de la base de datos.
+        /// </summary>
+        /// <typeparam name="TIDbContext">Tipo de interfaz del contexto.</typeparam>
+        /// <typeparam name="TDbContext">Tipo de contexto.</typeparam>
+        /// <param name="services">Collección de servicios.</param>
+        /// <returns>TDbContext | ApplicationException.</returns>
+        public static IServiceCollection LoadDatabase<TIDbContext, TDbContext>(
+            this IServiceCollection services)
+          where TIDbContext : class
+          where TDbContext : EntityFrameworkDbContext, TIDbContext
+        {
+            var databaseSettings = services.ToSettings<DatabaseSettings>()
+                .ToIsNullOrEmptyThrow(nameof(DatabaseSettings));
+
+            var dbProvider = databaseSettings.DbProvider.ToEnum<DbProvider>();
+
+            services.AddScoped<TIDbContext, TDbContext>();
+
+            switch (dbProvider)
+            {
+                case DbProvider.Memory:
+                    services.LoadInMemoryDatabase<TDbContext>();
+                    break;
+                case DbProvider.SqlServer:
+                    services.LoadSqlServer<TDbContext>(databaseSettings.SqlServerSettings);
+                    break;
+                case DbProvider.SQLite:
+                default:
+                    throw new Exception($"Unsupported database provider: {databaseSettings.DbProvider}");
+            }
+
+            return services;
+        }
+
         #region SqlServer
 
         /// <summary>
