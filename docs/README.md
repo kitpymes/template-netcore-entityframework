@@ -102,6 +102,13 @@ public static class DependencyInjection
 ```
 
 ```cs
+public static class ChangeTrackerExtensions
+{
+    public static DbContext WithChangeTracker<TUserId>(this DbContext context, TUserId? userId, bool enabled = true) {}
+}
+```
+
+```cs
 public static class ConfigurationsExtensions
 {
     public static ModelBuilder WithEntitiesConfigurations(this ModelBuilder modelBuilder, Assembly assembly, bool enabled = true) {}
@@ -120,13 +127,6 @@ public static class GetEntityTypesExtensions
 ```
 
 ```cs
-public static class OptimizedContextExtensions
-{
-    public static DbContext WithOptimizedContext(this DbContext context, bool enabled = true) {}
-}
-```
-
-```cs
 public static class GlobalFiltersExtensions
 {
     public static ModelBuilder WithTenantFilter(this ModelBuilder modelBuilder, bool enabled = true) {}
@@ -136,6 +136,25 @@ public static class GlobalFiltersExtensions
     public static ModelBuilder WithDeleteFilter(this ModelBuilder modelBuilder, bool enabled = true) {}
 
     public static void WithFilter<TInterface>(this ModelBuilder modelBuilder, Expression<Func<TInterface, bool>> expression) {}
+}
+```
+
+```cs
+public static class LoggerExtensions
+{
+    public static DbContext WithConsoleLogSaveChanges(this DbContext context, bool enabled = true) {}
+
+    internal static DbContextOptionsBuilder WithLogger(
+            this DbContextOptionsBuilder options,
+            IServiceCollection services,
+            bool enabled = true) {}
+}
+```
+
+```cs
+public static class OptimizedContextExtensions
+{
+    public static DbContext WithOptimizedContext(this DbContext context, bool enabled = true) {}
 }
 ```
 
@@ -155,20 +174,8 @@ public static class QueryableExtensions
 ```cs
 public static class ShadowPropertiesExtensions
 {
-    public static ModelBuilder WithTenantShadowProperty<TTenant, TTenantId>(
-            this ModelBuilder modelBuilder,
-            TTenantId tenantId,
-            bool enabled = true)
-           where TTenant : IEntityBase {}
-
-    public static ModelBuilder WithActiveShadowProperty(this ModelBuilder modelBuilder, bool enabled = true) {}
-
-    public static ModelBuilder WithDeleteShadowProperty(this ModelBuilder modelBuilder, bool enabled = true) {}
-
-    public static ModelBuilder WithRowVersionShadowProperty(this ModelBuilder modelBuilder, bool enabled = true) {}
-
-    public static ModelBuilder WithAuditedShadowProperties<TUser, TUserId>(this ModelBuilder modelBuilder, bool enabled = true)
-            where TUser : IEntityBase {}
+    public static ModelBuilder WithShadowProperties<TUser, TUserId>(this ModelBuilder modelBuilder, bool enabled = true)
+        where TUser : IEntityBase {}
 }
 ```
 
@@ -193,6 +200,15 @@ public abstract class EntityFrameworkConverter
 ```
 
 ### Settings
+
+```cs
+public class DatabaseSettings
+{
+    public string? DbProvider { get; set; }
+
+    public SqlServerSettings? SqlServerSettings { get; set; }
+}
+```
 
 ```cs
 public class EntityFrameworkOptions
@@ -227,22 +243,51 @@ public class SqlServerOptions : EntityFrameworkOptions
 {
     public SqlServerSettings SqlServerSettings { get; private set; } = new SqlServerSettings();
 
-    public SqlServerOptions WithDbContextOptions(Action<SqlServerDbContextOptionsBuilder> sqlServerDbContextOptions) {}
+    #region EntityFrameworkOptions
 
-    public SqlServerOptions WithLogErrors(bool enabled = true) {}
+        public virtual EntityFrameworkOptions WithOptions(Action<DbContextOptionsBuilder> dbContextOptionsBuilder) {}
+
+    #region EntityFrameworkOptions
 
     public SqlServerOptions WithConnectionString(string connectionString) {}
+
+    public SqlServerOptions WithSqlServerDbContextOptions(Action<SqlServerDbContextOptionsBuilder> sqlServerDbContextOptions) {}
+
+    public new SqlServerOptions WithCreate(bool enabled = true) {}
+
+    public new SqlServerOptions WithMigrate(bool enabled = true) {}
+
+    public new SqlServerOptions WithDelete(bool enabled = true) {}
+
+    public new SqlServerOptions WithLogErrors(bool enabled = SqlServerSettings.DefaultLogErrors) {}
 }
 ```
 
 ```cs
 public class SqlServerSettings : EntityFrameworkSettings
 {
-    public Action<SqlServerDbContextOptionsBuilder>? SqlServerDbContextOptions { get; set; }
+    #region EntityFrameworkSettings
 
-    public bool? IsLogErrorsEnabled { get; set; } = false;
+        public bool? Enabled { get; set; }
 
-    public string? ConnectionString { get; set; }
+        public bool? Create { get; set; }
+
+        public bool? Migrate { get; set; }
+
+        public bool? Delete { get; set; }
+    
+        [JsonIgnore]
+        public bool? LogErrors { get; set; }
+
+        [JsonIgnore]
+        public Action<DbContextOptionsBuilder>? DbContextOptions { get; set; }
+
+    #endregion EntityFrameworkSettings
+
+    public string? Connection { get; set; }
+
+    [JsonIgnore]
+    public Action<SqlServerDbContextOptionsBuilder>? SqlServerOptions { get; set; }
 }
 ```
 
@@ -286,16 +331,16 @@ public abstract class EntityFrameworkUnitOfWork<TDbContext> : IEntityFrameworkUn
 ```cs
 public interface IEntityFrameworkDbContext
 {
-    void SaveChangesWithTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
-
-    Task SaveChangesWithTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, CancellationToken cancellationToken = default);
+    EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
+            where TEntity : class;
 
     void SaveChanges();
 
     Task SaveChangesAsync(CancellationToken cancellationToken = default);
 
-    EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
-        where TEntity : class;
+    void SaveChangesWithTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
+
+    Task SaveChangesWithTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, CancellationToken cancellationToken = default);
 }
 ```
 

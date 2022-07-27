@@ -18,18 +18,13 @@ namespace Kitpymes.Core.EntityFramework
     public interface IEntityFrameworkDbContext
     {
         /// <summary>
-        /// Guarda una operación en la base de datos con transacciones.
+        /// Proporciona acceso a información y operaciones de seguimiento de cambios para una entidad determinada.
         /// </summary>
-        /// <param name="isolationLevel">Especifica el comportamiento de bloqueo de transacciones para la conexión.</param>
-        void SaveChangesWithTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
-
-        /// <summary>
-        /// Guarda una operación en la base de datos con transacciones.
-        /// </summary>
-        /// <param name="isolationLevel">Especifica el comportamiento de bloqueo de transacciones para la conexión.</param>
-        /// <param name="cancellationToken">Para observar mientras espera a que se complete la tarea.</param>
-        /// <returns>Task.</returns>
-        Task SaveChangesWithTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, CancellationToken cancellationToken = default);
+        /// <typeparam name="TEntity">Tipo de entidad.</typeparam>
+        /// <param name="entity">Entidad.</param>
+        /// <returns>Entidad de seguimiento.</returns>
+        EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
+            where TEntity : class;
 
         /// <summary>
         /// Guarda una operación en la base de datos.
@@ -44,12 +39,17 @@ namespace Kitpymes.Core.EntityFramework
         Task SaveChangesAsync(CancellationToken cancellationToken = default);
 
         /// <summary>
-        /// Proporciona acceso a información y operaciones de seguimiento de cambios para una entidad determinada.
+        /// Guarda una operación en la base de datos con transacciones.
         /// </summary>
-        /// <typeparam name="TEntity">Tipo de entidad.</typeparam>
-        /// <param name="entity">Entidad.</param>
-        /// <returns>Entidad de seguimiento.</returns>
-        EntityEntry<TEntity> Entry<TEntity>(TEntity entity)
-            where TEntity : class;
+        /// <param name="isolationLevel">Especifica el comportamiento de bloqueo de transacciones para la conexión.</param>
+        void SaveChangesWithTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted);
+
+        /// <summary>
+        /// Guarda una operación en la base de datos con transacciones.
+        /// </summary>
+        /// <param name="isolationLevel">Especifica el comportamiento de bloqueo de transacciones para la conexión.</param>
+        /// <param name="cancellationToken">Para observar mientras espera a que se complete la tarea.</param>
+        /// <returns>Task.</returns>
+        Task SaveChangesWithTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, CancellationToken cancellationToken = default);
     }
 }

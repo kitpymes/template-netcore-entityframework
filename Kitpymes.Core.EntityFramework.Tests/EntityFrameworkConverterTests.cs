@@ -1,8 +1,8 @@
-using Kitpymes.Core.Entities;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-
 namespace Kitpymes.Core.EntityFramework.Tests
 {
+    using Kitpymes.Core.Entities;
+    using Microsoft.VisualStudio.TestTools.UnitTesting;
+
     [TestClass]
     public class EntityFrameworkConverterTests
     {

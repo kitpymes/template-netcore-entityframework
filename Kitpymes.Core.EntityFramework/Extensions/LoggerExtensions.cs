@@ -7,6 +7,7 @@
 
 namespace Kitpymes.Core.EntityFramework
 {
+    using System;
     using Kitpymes.Core.Shared;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Diagnostics;
@@ -27,6 +28,25 @@ namespace Kitpymes.Core.EntityFramework
     /// </remarks>
     public static class LoggerExtensions
     {
+        /// <summary>
+        /// Logea en la consola los cambios que se producen en la DB.
+        /// </summary>
+        /// <param name="context">Contexto.</param>
+        /// <param name="enabled">Si esta habilitado.</param>
+        /// <returns>DbContext.</returns>
+        public static DbContext WithConsoleLogSaveChanges(this DbContext context, bool enabled = true)
+        {
+            if (enabled)
+            {
+                if (context.ChangeTracker.HasChanges())
+                {
+                    Console.WriteLine(context.ChangeTracker.DebugView.LongView);
+                }
+            }
+
+            return context;
+        }
+
         internal static DbContextOptionsBuilder WithLogger(
             this DbContextOptionsBuilder options,
             IServiceCollection services,

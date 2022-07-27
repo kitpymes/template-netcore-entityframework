@@ -89,21 +89,6 @@ namespace Kitpymes.Core.EntityFramework
         }
 
         /// <summary>
-        /// Obtiene o establece un valor que indica si se habilita la eliminación de la base de datos si esta existe.
-        /// </summary>
-        public bool? Delete
-        {
-            get => _delete;
-            set
-            {
-                if (value.HasValue)
-                {
-                    _delete = value.Value;
-                }
-            }
-        }
-
-        /// <summary>
         /// Obtiene o establece un valor que indica si se habilitan las migraciones.
         /// Creará la base de datos si aún no existe.
         /// Es mutuamente excluyente con IsEnsuredDeletedEnabled.
@@ -116,6 +101,21 @@ namespace Kitpymes.Core.EntityFramework
                 if (value.HasValue)
                 {
                     _migrate = value.Value;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Obtiene o establece un valor que indica si se habilita la eliminación de la base de datos si esta existe.
+        /// </summary>
+        public bool? Delete
+        {
+            get => _delete;
+            set
+            {
+                if (value.HasValue)
+                {
+                    _delete = value.Value;
                 }
             }
         }

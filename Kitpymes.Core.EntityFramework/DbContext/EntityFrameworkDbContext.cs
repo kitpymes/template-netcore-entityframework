@@ -44,7 +44,7 @@ namespace Kitpymes.Core.EntityFramework
         #region Save
 
         /// <inheritdoc/>
-        public new void SaveChanges()
+        public new virtual void SaveChanges()
         {
             try
             {
@@ -57,7 +57,20 @@ namespace Kitpymes.Core.EntityFramework
         }
 
         /// <inheritdoc/>
-        public void SaveChangesWithTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
+        public new virtual async Task SaveChangesAsync(CancellationToken cancellationToken = default)
+        {
+            try
+            {
+                await base.SaveChangesAsync(cancellationToken);
+            }
+            catch (Exception exception)
+            {
+                await ThrowSaveAsync(exception);
+            }
+        }
+
+        /// <inheritdoc/>
+        public virtual void SaveChangesWithTransaction(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted)
         {
             try
             {
@@ -84,20 +97,7 @@ namespace Kitpymes.Core.EntityFramework
         }
 
         /// <inheritdoc/>
-        public new async Task SaveChangesAsync(CancellationToken cancellationToken = default)
-        {
-            try
-            {
-                await base.SaveChangesAsync(cancellationToken);
-            }
-            catch (Exception exception)
-            {
-                await ThrowSaveAsync(exception);
-            }
-        }
-
-        /// <inheritdoc/>
-        public async Task SaveChangesWithTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, CancellationToken cancellationToken = default)
+        public virtual async Task SaveChangesWithTransactionAsync(IsolationLevel isolationLevel = IsolationLevel.ReadCommitted, CancellationToken cancellationToken = default)
         {
             try
             {
@@ -106,7 +106,7 @@ namespace Kitpymes.Core.EntityFramework
                     await Transaction.DisposeAsync();
                 }
 
-                Transaction = await Database.BeginTransactionAsync(isolationLevel);
+                Transaction = await Database.BeginTransactionAsync(isolationLevel, cancellationToken);
 
                 await base.SaveChangesAsync(cancellationToken);
 

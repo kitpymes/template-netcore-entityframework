@@ -26,138 +26,57 @@ namespace Kitpymes.Core.EntityFramework
     public static class ShadowPropertiesExtensions
     {
         /// <summary>
-        /// Configura la propiedad 'TenantId' a las entidades que implementen la interface 'ITenant'.
-        /// </summary>
-        /// <typeparam name="TTenant">Tipo de dato de la clase tenant.</typeparam>
-        /// <typeparam name="TTenantId">Tipo de dato del id de tenant.</typeparam>
-        /// <param name="modelBuilder">Modelo de entidades.</param>
-        /// <param name="tenantId">Id del tenant.</param>
-        /// <param name="enabled">Si se habilita la configuración.</param>
-        /// <returns>ModelBuilder.</returns>
-        public static ModelBuilder WithTenantShadowProperty<TTenant, TTenantId>(
-            this ModelBuilder modelBuilder,
-            TTenantId tenantId,
-            bool enabled = true)
-           where TTenant : IEntityBase
-        {
-            if (enabled)
-            {
-                var entities = modelBuilder.GetEntityTypes<ITenant>();
-
-                if (entities is not null)
-                {
-                    foreach (var entity in entities)
-                    {
-                        if (typeof(ITenant).IsAssignableFrom(entity))
-                        {
-                            modelBuilder?.Entity(entity).Property(typeof(TTenantId), ITenant.TenantId).HasDefaultValue(tenantId).ValueGeneratedOnAdd();
-                            modelBuilder?.Entity(entity).HasOne(typeof(TTenant)).WithMany().HasForeignKey(ITenant.TenantId).OnDelete(DeleteBehavior.ClientSetNull);
-                        }
-                    }
-                }
-            }
-
-            return modelBuilder;
-        }
-
-        /// <summary>
-        /// Configura la propiedad 'IsActive' a las entidades que implementen la interface 'IActive'.
-        /// </summary>
-        /// <param name="modelBuilder">Modelo de entidades.</param>
-        /// <param name="enabled">Si se habilita la configuración.</param>
-        /// <returns>ModelBuilder.</returns>
-        public static ModelBuilder WithActiveShadowProperty(this ModelBuilder modelBuilder, bool enabled = true)
-        {
-            if (enabled)
-            {
-                var entities = modelBuilder.GetEntityTypes<IActive>();
-
-                if (entities is not null)
-                {
-                    foreach (var entity in entities)
-                    {
-                        if (typeof(IActive).IsAssignableFrom(entity))
-                        {
-                            modelBuilder?.Entity(entity).Property<bool>(IActive.IsActive).IsRequired();
-                        }
-                    }
-                }
-            }
-
-            return modelBuilder;
-        }
-
-        /// <summary>
-        /// Configura la propiedad 'IsDelete' a las entidades que implementen la interface 'IDelete'.
-        /// </summary>
-        /// <param name="modelBuilder">Modelo de entidades.</param>
-        /// <param name="enabled">Si se habilita la configuración.</param>
-        /// <returns>ModelBuilder.</returns>
-        public static ModelBuilder WithDeleteShadowProperty(this ModelBuilder modelBuilder, bool enabled = true)
-        {
-            if (enabled)
-            {
-                var entities = modelBuilder.GetEntityTypes<IDelete>();
-
-                if (entities is not null)
-                {
-                    foreach (var entity in entities)
-                    {
-                        if (typeof(IDelete).IsAssignableFrom(entity))
-                        {
-                            modelBuilder?.Entity(entity).Property<bool>(IDelete.IsDelete).IsRequired();
-                        }
-                    }
-                }
-            }
-
-            return modelBuilder;
-        }
-
-        /// <summary>
-        /// Configura la propiedad 'RowVersion' a las entidades que implementen la interface 'IRowVersion'.
-        /// </summary>
-        /// <param name="modelBuilder">Modelo de entidades.</param>
-        /// <param name="enabled">Si se habilita la configuración.</param>
-        /// <returns>ModelBuilder.</returns>
-        public static ModelBuilder WithRowVersionShadowProperty(this ModelBuilder modelBuilder, bool enabled = true)
-        {
-            if (enabled)
-            {
-                var entities = modelBuilder.GetEntityTypes<IRowVersion>();
-
-                if (entities is not null)
-                {
-                    foreach (var entity in entities)
-                    {
-                        if (typeof(IRowVersion).IsAssignableFrom(entity))
-                        {
-                            modelBuilder?.Entity(entity).Property<long>(IRowVersion.RowVersion).IsRequired();
-                        }
-                    }
-                }
-            }
-
-            return modelBuilder;
-        }
-
-        /// <summary>
-        ///  <para>
-        ///     Agrega y configura la propiedad 'CreatedDate' y 'CreatedUserId' a las entidades que implementen la interface 'ICreationAudited'.
-        ///  </para>
-        ///  <para>
-        ///     Agrega y configura la propiedad 'ModifiedDate' y 'ModifiedUserId' a las entidades que implementen la interface 'IModificationAudited'.
-        ///  </para>
-        ///  <para>
-        ///     Agrega y configura la propiedad 'DeletedDate' y 'DeletedUserId' a las entidades que implementen la interface 'IDeletionAudited'.
-        ///  </para>
+        /// <list type="bullet">
+        ///     <para>
+        ///         Descripción de las Shadow Properties que se agregan a la entidad que implementa alguna de estas interfaces.
+        ///     </para>
+        ///     <item>
+        ///         <term>ICreationAudited</term>
+        ///         <para>Agrega y configura la propiedad "ICreationAudited.CreatedDate" | Type: DateTime | Required: true.</para>
+        ///         <para>Agrega y configura la propiedad "ICreationAudited.CreatedUserId" | Type: TUserId | Required: true.</para>
+        ///     </item>
+        ///     <item>
+        ///         <term>IModificationAudited</term>
+        ///         <para>Agrega y configura la propiedad "IModificationAudited.ModifiedDate" | Type: DateTime? | Required: false.</para>
+        ///         <para>Agrega y configura la propiedad "IModificationAudited.ModifiedUserId" | Type: TUserId | Required: false.</para>
+        ///     </item>
+        ///     <item>
+        ///         <term>IDeletionAudited</term>
+        ///         <para>Agrega y configura la propiedad "IDeletionAudited.DeletedDate" | Type: DateTime? | Required: false.</para>
+        ///         <para>Agrega y configura la propiedad "IDeletionAudited.DeletedUserId" | Type: TUserId | Required: false.</para>
+        ///     </item>
+        ///     <item>
+        ///         <term>IActive</term>
+        ///         <description>Agrega y configura la propiedad "IActive.IsActive" | Type: bool | Required: true.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>IDefault</term>
+        ///         <description>Agrega y configura la propiedad "IDefault.IsDefault" | Type: bool | Required: true | DefaultValue: false.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>IDelete</term>
+        ///         <description>Agrega y configura la propiedad "IDelete.IsDelete" | Type: bool | Required: true.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>IStatic</term>
+        ///         <description>Agrega y configura la propiedad "IStatic.IsStatic" | Type: bool | Required: true | DefaultValue: false.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>INotVisible</term>
+        ///         <description>Agrega y configura la propiedad "INotVisible.IsNotVisible" | Type: bool | Required: true | DefaultValue: false.</description>
+        ///     </item>
+        ///     <item>
+        ///         <term>IRowVersion</term>
+        ///         <description>Agrega y configura la propiedad "IRowVersion.RowVersion" | Type: long | Required: true.</description>
+        ///     </item>
+        /// </list>
         /// </summary>
         /// <typeparam name="TUser">Tipo de dato de la clase user.</typeparam>
         /// <typeparam name="TUserId">Tipo de dato del id de user.</typeparam>
         /// <param name="modelBuilder">Modelo de entidades.</param>
         /// <param name="enabled">Si se habilita la configuración.</param>
         /// <returns>ModelBuilder.</returns>
-        public static ModelBuilder WithAuditedShadowProperties<TUser, TUserId>(this ModelBuilder modelBuilder, bool enabled = true)
+        public static ModelBuilder WithShadowProperties<TUser, TUserId>(this ModelBuilder modelBuilder, bool enabled = true)
             where TUser : IEntityBase
         {
             if (enabled)
@@ -172,8 +91,8 @@ namespace Kitpymes.Core.EntityFramework
                     {
                         if (typeof(ICreationAudited).IsAssignableFrom(entity))
                         {
-                            modelBuilder?.Entity(entity).Property<DateTime>(ICreationAudited.CreatedDate);
-                            modelBuilder?.Entity(entity).Property(userIdType, ICreationAudited.CreatedUserId);
+                            modelBuilder?.Entity(entity).Property<DateTime>(ICreationAudited.CreatedDate).IsRequired();
+                            modelBuilder?.Entity(entity).Property(userIdType, ICreationAudited.CreatedUserId).IsRequired();
                         }
 
                         if (typeof(IModificationAudited).IsAssignableFrom(entity))
@@ -186,6 +105,36 @@ namespace Kitpymes.Core.EntityFramework
                         {
                             modelBuilder?.Entity(entity).Property<DateTime?>(IDeletionAudited.DeletedDate);
                             modelBuilder?.Entity(entity).Property(userIdType, IDeletionAudited.DeletedUserId);
+                        }
+
+                        if (typeof(IActive).IsAssignableFrom(entity))
+                        {
+                            modelBuilder?.Entity(entity).Property<bool>(IActive.IsActive).IsRequired();
+                        }
+
+                        if (typeof(IDefault).IsAssignableFrom(entity))
+                        {
+                            modelBuilder?.Entity(entity).Property<bool>(IDefault.IsDefault).HasDefaultValue(false).IsRequired();
+                        }
+
+                        if (typeof(IDelete).IsAssignableFrom(entity))
+                        {
+                            modelBuilder?.Entity(entity).Property<bool>(IDelete.IsDelete).IsRequired();
+                        }
+
+                        if (typeof(IStatic).IsAssignableFrom(entity))
+                        {
+                            modelBuilder?.Entity(entity).Property<bool>(IStatic.IsStatic).HasDefaultValue(false).IsRequired();
+                        }
+
+                        if (typeof(INotVisible).IsAssignableFrom(entity))
+                        {
+                            modelBuilder?.Entity(entity).Property<bool>(INotVisible.IsNotVisible).HasDefaultValue(false).IsRequired();
+                        }
+
+                        if (typeof(IRowVersion).IsAssignableFrom(entity))
+                        {
+                            modelBuilder?.Entity(entity).Property<long>(IRowVersion.RowVersion).IsRequired();
                         }
                     }
                 }

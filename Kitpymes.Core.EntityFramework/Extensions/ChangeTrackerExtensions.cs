@@ -39,24 +39,17 @@ namespace Kitpymes.Core.EntityFramework
             {
                 if (context.ChangeTracker.HasChanges())
                 {
-                    var dateTime = DateTime.UtcNow;
-
-                    var dateTimeOffset = DateTimeOffset.Now.ToUnixTimeSeconds();
-
                     foreach (var entry in context.ChangeTracker.Entries())
                     {
                         switch (entry.State)
                         {
                             case EntityState.Added:
                                 {
-                                    if (entry.Entity is ITenant)
+                                    if (entry.Entity is ICreationAudited)
                                     {
-                                        // if (AppSession.Tenant?.Enabled == true)
-                                        // {
-                                        //    var tenantId = AppSession.Tenant?.Id.ToIsNullOrEmptyThrow("AppSession.Tenant?.Id");
+                                        entry.Property(ICreationAudited.CreatedDate).CurrentValue = DateTime.UtcNow;
 
-                                        // entry.Property(ITenant.TenantId).CurrentValue = tenantId;
-                                        // }
+                                        entry.Property(ICreationAudited.CreatedUserId).CurrentValue = userId;
                                     }
 
                                     if (entry.Entity is IActive)
@@ -71,14 +64,7 @@ namespace Kitpymes.Core.EntityFramework
 
                                     if (entry.Entity is IRowVersion)
                                     {
-                                        entry.Property(IRowVersion.RowVersion).CurrentValue = dateTimeOffset;
-                                    }
-
-                                    if (entry.Entity is ICreationAudited)
-                                    {
-                                        entry.Property(ICreationAudited.CreatedDate).CurrentValue = dateTime;
-
-                                        entry.Property(ICreationAudited.CreatedUserId).CurrentValue = userId;
+                                        entry.Property(IRowVersion.RowVersion).CurrentValue = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                                     }
 
                                     break;
@@ -86,32 +72,50 @@ namespace Kitpymes.Core.EntityFramework
 
                             case EntityState.Modified:
 
+                                if (entry.Entity is IModificationAudited)
+                                {
+                                    entry.Property(IModificationAudited.ModifiedDate).CurrentValue = DateTime.UtcNow;
+
+                                    entry.Property(IModificationAudited.ModifiedUserId).CurrentValue = userId;
+                                }
+
                                 if (entry.Entity is IRowVersion)
                                 {
                                     var rowVersion = entry.Property(IRowVersion.RowVersion);
 
                                     if (rowVersion.OriginalValue != rowVersion.CurrentValue)
                                     {
-                                        var message = "The record you attempted to edit "
-                                            + "was modified by another user after you got the original value.";
+                                        var message = "El registro que intentó editar fue modificado por otro usuario después de obtener el valor original.";
 
                                         throw new DbUpdateConcurrencyException(message);
                                     }
 
-                                    rowVersion.CurrentValue = dateTimeOffset;
-                                }
-
-                                if (entry.Entity is IModificationAudited)
-                                {
-                                    entry.Property(IModificationAudited.ModifiedDate).CurrentValue = dateTime;
-
-                                    entry.Property(IModificationAudited.ModifiedUserId).CurrentValue = userId;
+                                    rowVersion.CurrentValue = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                                 }
 
                                 break;
 
                             case EntityState.Deleted:
                                 {
+                                    if (entry.Entity is IStatic)
+                                    {
+                                        if ((bool)entry.Property(IStatic.IsStatic).CurrentValue == true)
+                                        {
+                                            var message = $"No se puede eliminar la entidad porque es estática.";
+
+                                            throw new DbUpdateException(message);
+                                        }
+                                    }
+
+                                    entry.State = EntityState.Modified;
+
+                                    if (entry.Entity is IDeletionAudited)
+                                    {
+                                        entry.Property(IDeletionAudited.DeletedDate).CurrentValue = DateTime.UtcNow;
+
+                                        entry.Property(IDeletionAudited.DeletedUserId).CurrentValue = userId;
+                                    }
+
                                     if (entry.Entity is IDelete)
                                     {
                                         entry.Property(IDelete.IsDelete).CurrentValue = true;
@@ -120,13 +124,6 @@ namespace Kitpymes.Core.EntityFramework
                                     if (entry.Entity is IActive)
                                     {
                                         entry.Property(IActive.IsActive).CurrentValue = false;
-                                    }
-
-                                    if (entry.Entity is IDeletionAudited)
-                                    {
-                                        entry.Property(IDeletionAudited.DeletedDate).CurrentValue = dateTime;
-
-                                        entry.Property(IDeletionAudited.DeletedUserId).CurrentValue = userId;
                                     }
 
                                     break;
